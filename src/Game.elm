@@ -1,4 +1,4 @@
-module Game exposing (Game, Phase(..), Region, gameInitGenerator)
+module Game exposing (Game, Phase(..), Region, Results, gameInitGenerator)
 
 import Random exposing (Generator)
 import Random.Extra
@@ -9,13 +9,19 @@ import Upgrades exposing (Upgrades)
 type Phase
     = MainMenu
     | GameLoop Game
-    | GameOver { you : Region, others : List Region }
-    | GameWon { you : Region, others : List Region }
+    | GameOver Results
+    | GameWon Results
 
 
 type alias Region =
     { stats : Stats
     , upgrades : Upgrades
+    }
+
+
+type alias Results =
+    { you : Region
+    , others : List Region
     }
 
 

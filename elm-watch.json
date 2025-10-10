@@ -1,0 +1,11 @@
+{
+    "targets": {
+        "Game": {
+            "inputs": [
+                "src/Main.elm"
+            ],
+            "output": "dist/game.js"
+        }
+    },
+    "serve": "dist/"
+}
