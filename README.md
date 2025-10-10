@@ -23,7 +23,9 @@ Máš čas 24 měsíců do finálního kola KrajKombat her.
 ## Herní systémy:
 
 * Vše se graficky odehrává ve tvé kanceláři
-  * out of scope: občas je komedický střih do tvojí ložnice nebo když jsi na záchodě - neodkladný hovor / SMS / email / pager? od kdy máš pager? / když máš zrovna interview v rádiu
+  * out of scope: občas je komedický střih do tvojí ložnice nebo když jsi na
+    záchodě - neodkladný hovor / SMS / email / pager? od kdy máš pager? / když
+    máš zrovna interview v rádiu
 * každý měsíc máš před sebou agendu různých úkolů a věcí, které je třeba řešit
 * urgence - úkoly, které se odkryjí třeba až při rozhodnutí se o pátém úkolu z 12
 
@@ -86,4 +88,7 @@ Zemědělství
 
 ## Upgrady:
 
-* (intenzivní black hat bootcamp SPŠE) -> permanentní unlock, hacknutá databáze ostatních krajů = vhled do jejich statistik + v budoucích investicích odemknutá možnost ovlivnit jejich -GREF, +BREF, -AP, -AP/mo (sabotovat je, zpomalit je)
+* (intenzivní black hat bootcamp SPŠE) -> permanentní unlock, hacknutá databáze
+  ostatních krajů = vhled do jejich statistik + v budoucích investicích
+  odemknutá možnost ovlivnit jejich -GREF, +BREF, -AP, -AP/mo (sabotovat je,
+  zpomalit je)
