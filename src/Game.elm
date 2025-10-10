@@ -1,8 +1,9 @@
-module Game exposing (Game, Phase(..), Results, advanceMonth, end, gameInitGenerator)
+module Game exposing (Game, Phase(..), Results(..), advanceMonth, end, gameInitGenerator)
 
 import Logic
 import Random exposing (Generator)
 import Random.Extra
+import Ranking exposing (Ranking)
 import Region exposing (Region)
 
 
@@ -10,13 +11,20 @@ type Phase
     = MainMenu
     | Intro
     | GameLoop Game
-    | GameOver Results
-    | GameWon Results
+    | GameEnded Results
 
 
-type alias Results =
+type Results
+    = YouWon ResultsData
+    | YouLost ResultsData
+    | YouLostByDraw ResultsData
+    | Bug
+
+
+type alias ResultsData =
     { you : Region
     , others : List Region
+    , ranking : Ranking
     }
 
 
@@ -36,30 +44,53 @@ gameInitGenerator =
             , monthsLeft = 24
             }
         )
-        |> Random.Extra.andMap Region.generator
-        |> Random.Extra.andMap (Random.list 3 Region.generator)
+        |> Random.Extra.andMap (Region.generator Region.youName)
+        |> Random.Extra.andMap (Region.listGenerator 3)
 
 
 advanceMonth : Game -> Game
 advanceMonth game =
     let
+        newYou : Region
         newYou =
             Logic.advanceMonthForRegion game.you
 
+        newOthers : List Region
         newOthers =
             game.others
                 |> List.map Logic.advanceMonthForRegion
+    in
+    { game
+        | you = newYou
+        , others = newOthers
+        , monthsLeft = game.monthsLeft - 1
+    }
 
-        newGame =
-            { game
-                | you = newYou
-                , others = newOthers
-                , monthsLeft = game.monthsLeft - 1
+
+end : Game -> Results
+end game =
+    let
+        ranking : Ranking
+        ranking =
+            Ranking.rank game
+
+        resultsData : ResultsData
+        resultsData =
+            { you = game.you
+            , others = game.others
+            , ranking = ranking
             }
     in
-    newGame
+    case ranking of
+        fst :: _ ->
+            if fst.names == [ Region.youName ] then
+                YouWon resultsData
 
+            else if List.member Region.youName fst.names then
+                YouLostByDraw resultsData
 
-end : Game -> Result Results Results
-end game =
-    Debug.todo "Game.end"
+            else
+                YouLost resultsData
+
+        [] ->
+            Bug

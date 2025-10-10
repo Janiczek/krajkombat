@@ -10,7 +10,7 @@
 - [ ] game loop: showing new urgencies after some decisions
 - [ ] game loop: urgency fail consequences
 
-- [ ] remaining months counter (starts at 24)
+- [x] remaining months counter (starts at 24)
 - [ ] resource: AP (starts at default APmo)
 - [ ] resource: APmo (starts at 100)
 - [ ] resource: BBV (starts at 0)

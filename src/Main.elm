@@ -4,7 +4,9 @@ import Browser
 import Game exposing (Game)
 import Html exposing (Html)
 import Html.Events
+import Juice exposing (Juice)
 import Random
+import Ranking exposing (Ranking)
 import Region exposing (Region)
 import Stats exposing (Stats)
 import UI
@@ -12,11 +14,13 @@ import Upgrades exposing (Upgrades)
 
 
 type alias Flags =
-    ()
+    { randomSeed : Int }
 
 
 type alias Model =
     { gamePhase : Game.Phase
+    , juice : Juice
+    , randomSeed : Random.Seed
     }
 
 
@@ -25,7 +29,6 @@ type Msg
       StartGame
       -- Intro
     | FinishIntro
-    | GameLoopInitialized Game
       -- GameLoop
     | AdvanceMonth
 
@@ -41,8 +44,19 @@ main =
 
 
 init : Flags -> ( Model, Cmd Msg )
-init () =
-    ( { gamePhase = Game.MainMenu }
+init flags =
+    let
+        seed : Random.Seed
+        seed =
+            Random.initialSeed flags.randomSeed
+
+        ( juice, newSeed ) =
+            Random.step Juice.generator seed
+    in
+    ( { gamePhase = Game.MainMenu
+      , juice = juice
+      , randomSeed = newSeed
+      }
     , Cmd.none
     )
 
@@ -56,12 +70,14 @@ update msg model =
             )
 
         FinishIntro ->
-            ( model
-            , Random.generate GameLoopInitialized Game.gameInitGenerator
-            )
-
-        GameLoopInitialized game ->
-            ( { model | gamePhase = Game.GameLoop game }
+            let
+                ( game, newSeed ) =
+                    Random.step Game.gameInitGenerator model.randomSeed
+            in
+            ( { model
+                | gamePhase = Game.GameLoop game
+                , randomSeed = newSeed
+              }
             , Cmd.none
             )
 
@@ -70,24 +86,19 @@ update msg model =
                 \game ->
                     if game.monthsLeft <= 0 then
                         let
+                            results : Game.Results
                             results =
                                 game
                                     |> Game.advanceMonth
                                     |> Game.end
                         in
-                        case results of
-                            Err results_ ->
-                                ( { model | gamePhase = Game.GameOver results_ }
-                                , Cmd.none
-                                )
-
-                            Ok results_ ->
-                                ( { model | gamePhase = Game.GameWon results_ }
-                                , Cmd.none
-                                )
+                        ( { model | gamePhase = Game.GameEnded results }
+                        , Cmd.none
+                        )
 
                     else
                         let
+                            newGame : Game
                             newGame =
                                 game
                                     |> Game.advanceMonth
@@ -109,10 +120,7 @@ updateGameLoop model f =
         Game.Intro ->
             ( model, Cmd.none )
 
-        Game.GameOver _ ->
-            ( model, Cmd.none )
-
-        Game.GameWon _ ->
+        Game.GameEnded _ ->
             ( model, Cmd.none )
 
 
@@ -127,28 +135,25 @@ view model =
     , body =
         [ Html.div
             [ UI.cls "font-mono p-2" ]
-            (viewGamePhase model.gamePhase)
+            (viewGamePhase model.juice model.gamePhase)
         ]
     }
 
 
-viewGamePhase : Game.Phase -> List (Html Msg)
-viewGamePhase phase =
+viewGamePhase : Juice -> Game.Phase -> List (Html Msg)
+viewGamePhase juice phase =
     case phase of
         Game.MainMenu ->
             viewMainMenu
 
         Game.Intro ->
-            viewIntro
+            viewIntro juice
 
         Game.GameLoop game ->
-            viewGameLoop game
+            viewGameLoop juice game
 
-        Game.GameOver results ->
-            viewGameOver results
-
-        Game.GameWon results ->
-            viewGameWon results
+        Game.GameEnded results ->
+            viewGameEnded results
 
 
 viewMainMenu : List (Html Msg)
@@ -157,27 +162,29 @@ viewMainMenu =
         [ Html.h1 [] [ Html.text title ]
         , UI.btn
             [ Html.Events.onClick StartGame ]
-            "Start Game"
+            "Cože"
         ]
     ]
 
 
-viewIntro : List (Html Msg)
-viewIntro =
+viewIntro : Juice -> List (Html Msg)
+viewIntro juice =
     [ UI.col []
         [ Html.text "TODO intro - story, exposition, blablabla"
         , UI.btn
             [ Html.Events.onClick FinishIntro ]
-            "Finish Intro"
+            -- "Seš moc dlouhej"
+            juice.finishIntroButtonText
         ]
     ]
 
 
-viewGameLoop : Game -> List (Html Msg)
-viewGameLoop game =
+viewGameLoop : Juice -> Game -> List (Html Msg)
+viewGameLoop juice game =
     [ UI.col []
-        [ Html.h2 [] [ Html.text "GameLoop Phase" ]
-        , UI.btn [ Html.Events.onClick AdvanceMonth ] "Advance Month"
+        [ viewMonthStats
+            juice.advanceMonthButtonText
+            game.monthsLeft
         , Html.div []
             [ Html.h3 [] [ Html.text "Your Region:" ]
             , viewRegion game.you
@@ -192,48 +199,111 @@ viewGameLoop game =
                                 ]
                         )
                 )
-            , Html.div []
-                [ Html.text ("Months left: " ++ String.fromInt game.monthsLeft) ]
             ]
         ]
     ]
 
 
-viewGameOver : Game.Results -> List (Html Msg)
-viewGameOver results =
-    [ UI.col []
-        [ Html.h2 [] [ Html.text "GameOver Phase" ]
-        , Html.h3 [] [ Html.text "Your Results:" ]
-        , viewRegion results.you
-        , Html.h3 [] [ Html.text "Other Regions:" ]
-        , Html.ul []
-            (results.others
-                |> List.indexedMap
-                    (\i r ->
-                        Html.li []
-                            [ Html.text ("Region " ++ String.fromInt (i + 1) ++ ":")
-                            , viewRegion r
+viewMonthStats : String -> Int -> Html Msg
+viewMonthStats advanceMonthButtonText monthsLeft =
+    UI.row []
+        -- TODO: as there are fewer and fewer months left, add text effects, change colors, add sweating, shaking (on hover?)
+        -- TODO: random funny button text
+        [ Html.text ("Zbývá měsíců: " ++ String.fromInt monthsLeft)
+        , UI.btn [ Html.Events.onClick AdvanceMonth ] advanceMonthButtonText
+        ]
+
+
+viewGameEnded : Game.Results -> List (Html Msg)
+viewGameEnded results =
+    case results of
+        Game.YouWon data ->
+            [ UI.col []
+                [ Html.h2 [] [ Html.text "Dobřes je zrušil!" ]
+                , viewRanking data.ranking
+                ]
+            ]
+
+        Game.YouLost data ->
+            [ UI.col []
+                [ Html.h2 [] [ Html.text "Prohrals kamo!" ]
+                , viewRanking data.ranking
+                ]
+            ]
+
+        Game.YouLostByDraw data ->
+            [ UI.col []
+                [ Html.h2 [] [ Html.text "Prohrals kamo bo plichta neplati!" ]
+                , viewRanking data.ranking
+                ]
+            ]
+
+        Game.Bug ->
+            [ Html.h2 [] [ Html.text "Ups, se to rozbilo" ] ]
+
+
+medalForRank : Int -> String
+medalForRank rank =
+    case rank of
+        0 ->
+            "🥇"
+
+        1 ->
+            "🥈"
+
+        2 ->
+            "🥉"
+
+        _ ->
+            ""
+
+
+ordinal : Int -> String
+ordinal n =
+    String.fromInt (n + 1) ++ "."
+
+
+viewRanking : Ranking -> Html Msg
+viewRanking ranking =
+    Html.table [ UI.cls "min-w-[20ch] table-auto border-spacing-y-2" ]
+        [ Html.thead []
+            [ Html.tr []
+                [ Html.th [ UI.cls "text-left" ] [ Html.text "#" ]
+                , Html.th [ UI.cls "text-left" ] [ Html.text " " ]
+                , Html.th [ UI.cls "text-left" ] [ Html.text "Kraj" ]
+                , Html.th [ UI.cls "text-right" ] [ Html.text "BrankyBodyVteřiny" ]
+                ]
+            ]
+        , Html.tbody []
+            (ranking
+                |> List.concatMap
+                    (\{ rank, bbv, names } ->
+                        let
+                            isYouGroup =
+                                List.member Region.youName names
+
+                            rowCls =
+                                if isYouGroup then
+                                    UI.cls "font-bold bg-yellow-50"
+
+                                else
+                                    UI.cls ""
+                        in
+                        [ Html.tr [ rowCls ]
+                            [ Html.td [] [ Html.text (ordinal rank) ]
+                            , Html.td [ UI.cls "text-xl" ] [ Html.text (medalForRank rank) ]
+                            , Html.td []
+                                [ names
+                                    |> List.intersperse ", "
+                                    |> String.concat
+                                    |> Html.text
+                                ]
+                            , Html.td [ UI.cls "text-right" ] [ Html.text (String.fromInt bbv) ]
                             ]
+                        ]
                     )
             )
         ]
-    ]
-
-
-viewGameWon : Game.Results -> List (Html Msg)
-viewGameWon results =
-    [ UI.col []
-        [ Html.h2 [] [ Html.text "GameWon Phase" ]
-        , Html.h3 [] [ Html.text "Your Results:" ]
-        , viewRegion results.you
-        , Html.h3 [] [ Html.text "Other Regions:" ]
-        , Html.ul []
-            (List.indexedMap
-                (\i r -> Html.li [] [ Html.text ("Region " ++ String.fromInt (i + 1) ++ ":"), viewRegion r ])
-                results.others
-            )
-        ]
-    ]
 
 
 viewRegion : Region -> Html Msg
