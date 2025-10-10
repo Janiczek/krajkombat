@@ -4,12 +4,14 @@ import AssocSet
 import Browser
 import Game exposing (Game)
 import Html exposing (Html)
+import Html.Attributes
 import Html.Events
 import Juice exposing (Juice)
 import Random
 import Ranking exposing (Ranking)
 import Region exposing (Region)
 import Resource exposing (Resources)
+import Round
 import UI
 import Upgrade exposing (Upgrade)
 
@@ -181,14 +183,17 @@ viewGamePhase juice phase =
             viewGameLoop juice game
 
         Game.GameEnded results ->
-            viewGameEnded results
+            viewGameEnded juice results
 
 
 viewMainMenu : List (Html Msg)
 viewMainMenu =
     [ UI.col [ UI.cls "items-center justify-center h-[60dvh] min-h-fit" ]
         [ Html.h1 [ UI.cls "font-bold text-2xl" ] [ Html.text title ]
-        , Html.h2 [ UI.cls "text-sm" ] [ Html.text "Zadavatel: Game Devs Ostrava / Zpracovatel: Martin Janiczek" ]
+        , Html.h2 [ UI.cls "text-sm" ]
+            [ Html.text "Zadavatel: Game Devs Ostrava / Zpracovatel: "
+            , UI.link "https://bsky.app/profile/janiczek.cz" "Martin Janiczek"
+            ]
         , UI.btn [ Html.Events.onClick StartGame ] "Cože"
         ]
     ]
@@ -219,11 +224,11 @@ viewGameLoop juice game =
             game.monthsLeft
         , UI.row []
             [ UI.col []
-                [ Html.h3 [] [ Html.text Region.youName ]
+                [ UI.heading Region.youName
                 , viewYourStats game.you
                 ]
             , UI.col []
-                [ Html.h3 [] [ Html.text "Ranking" ]
+                [ UI.heading "KrajKombat - Průběžna tabulka"
                 , viewRanking ranking
                 ]
             ]
@@ -241,17 +246,17 @@ viewMonthStats advanceMonthButtonText monthsLeft =
         ]
 
 
-viewGameEnded : Game.Results -> List (Html Msg)
-viewGameEnded results =
+viewGameEnded : Juice -> Game.Results -> List (Html Msg)
+viewGameEnded juice results =
     case results of
         Game.YouWon data ->
-            viewGameEnded_ "Dobřes je zrušil!" data
+            viewGameEnded_ juice.youWonMessage data
 
         Game.YouLost data ->
-            viewGameEnded_ "Prohrals kamo!" data
+            viewGameEnded_ juice.youLostMessage data
 
         Game.YouLostByDraw data ->
-            viewGameEnded_ "Prohrals kamo bo plichta neplati!" data
+            viewGameEnded_ juice.youLostByDrawMessage data
 
         Game.Bug ->
             [ Html.h2 [] [ Html.text "Ups, se to rozbilo" ] ]
@@ -262,7 +267,9 @@ viewGameEnded_ message resultsData =
     [ UI.col []
         [ Html.h2 [] [ Html.text message ]
         , viewRanking resultsData.ranking
-        , UI.btn [ Html.Events.onClick StartGame ] "Hrat znovu"
+        , UI.btn [ Html.Events.onClick StartGame ]
+            -- Valim to zkusit znovu
+            "Hrat znovu"
         , UI.btn [ Html.Events.onClick BackToMainMenu ] "Do menu"
         ]
     ]
@@ -304,28 +311,37 @@ viewRanking ranking =
             (ranking
                 |> List.concatMap
                     (\{ rank, bbv, names } ->
-                        let
-                            isYouGroup =
-                                List.member Region.youName names
+                        names
+                            |> List.indexedMap
+                                (\i name ->
+                                    let
+                                        isYou : Bool
+                                        isYou =
+                                            name == Region.youName
 
-                            rowCls =
-                                if isYouGroup then
-                                    UI.cls "font-bold bg-yellow-50"
+                                        rowCls : Html.Attribute Msg
+                                        rowCls =
+                                            if isYou then
+                                                UI.cls "font-bold bg-yellow-50"
 
-                                else
-                                    UI.cls ""
-                        in
-                        [ Html.tr [ rowCls ]
-                            [ Html.td [] [ Html.text (ordinal rank) ]
-                            , Html.td [ UI.cls "text-xl" ] [ Html.text (medalForRank rank) ]
-                            , Html.td []
-                                [ names
-                                    |> String.join ", "
-                                    |> Html.text
-                                ]
-                            , Html.td [ UI.cls "text-right" ] [ Html.text (String.fromInt bbv) ]
-                            ]
-                        ]
+                                            else
+                                                UI.cls ""
+
+                                        ordinalText : String
+                                        ordinalText =
+                                            if i == 0 then
+                                                ordinal rank
+
+                                            else
+                                                ""
+                                    in
+                                    Html.tr [ rowCls ]
+                                        [ Html.td [] [ Html.text ordinalText ]
+                                        , Html.td [ UI.cls "text-xl" ] [ Html.text (medalForRank rank) ]
+                                        , Html.td [] [ Html.text name ]
+                                        , Html.td [ UI.cls "text-right" ] [ Html.text (String.fromInt bbv) ]
+                                        ]
+                                )
                     )
             )
         ]
@@ -334,21 +350,43 @@ viewRanking ranking =
 viewYourStats : Region -> Html Msg
 viewYourStats region =
     UI.col []
-        [ Html.h4 [] [ Html.text "Stats:" ]
-        , viewResources region.resources
+        [ viewResources region.resources
         , viewUpgrades region.upgrades
         ]
 
 
 viewResources : Resources -> Html msg
 viewResources stats =
-    Html.ul []
-        [ Html.li [] [ Html.text ("AP: " ++ String.fromInt stats.ap) ]
-        , Html.li [] [ Html.text ("AP/měsíc: " ++ String.fromInt stats.apPerMonth) ]
-        , Html.li [] [ Html.text ("GREF: " ++ String.fromFloat stats.gref) ]
-        , Html.li [] [ Html.text ("BREF: " ++ String.fromFloat stats.bref) ]
-        , Html.li [] [ Html.text ("BBV: " ++ String.fromInt stats.bbv) ]
-        , Html.li [] [ Html.text ("BBV/měsíc: " ++ String.fromInt stats.bbvPerMonth) ]
+    UI.col []
+        [ UI.heading "Kasa:"
+        , Html.table [ UI.cls "min-w-[20ch] table-auto border-spacing-y-2" ]
+            [ Html.tbody []
+                [ Html.tr []
+                    [ Html.td [ UI.cls "pr-2" ] [ Html.text "Chechtaky:" ]
+                    , Html.td [ UI.cls "text-right" ] [ Html.text (String.fromInt stats.ap) ]
+                    ]
+                , Html.tr []
+                    [ Html.td [ UI.cls "pr-2" ] [ Html.text "Chechtaky/měsíc:" ]
+                    , Html.td [ UI.cls "text-right" ] [ Html.text (String.fromInt stats.apPerMonth) ]
+                    ]
+                , Html.tr []
+                    [ Html.td [ UI.cls "pr-2" ] [ Html.text "Šance na dobru nahodu:" ]
+                    , Html.td [ UI.cls "text-right" ] [ Html.text (Round.round 2 stats.gref) ]
+                    ]
+                , Html.tr []
+                    [ Html.td [ UI.cls "pr-2" ] [ Html.text "Šance na špatnu nahodu:" ]
+                    , Html.td [ UI.cls "text-right" ] [ Html.text (Round.round 2 stats.bref) ]
+                    ]
+                , Html.tr []
+                    [ Html.td [ UI.cls "pr-2" ] [ Html.text "BrankyBodyVteřiny:" ]
+                    , Html.td [ UI.cls "text-right" ] [ Html.text (String.fromInt stats.bbv) ]
+                    ]
+                , Html.tr []
+                    [ Html.td [ UI.cls "pr-2" ] [ Html.text "BrankyBodyVteřiny/měsíc:" ]
+                    , Html.td [ UI.cls "text-right" ] [ Html.text (String.fromInt stats.bbvPerMonth) ]
+                    ]
+                ]
+            ]
         ]
 
 
@@ -366,7 +404,7 @@ viewUpgrades upgrades =
 
     else
         UI.col []
-            [ Html.h4 [] [ Html.text "Upgrades:" ]
+            [ UI.heading "Upgrades:"
             , Html.ul []
                 (purchasedUpgrades
                     |> List.map (\name -> Html.li [] [ Html.text name ])

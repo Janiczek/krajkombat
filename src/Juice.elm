@@ -7,48 +7,76 @@ import Random.Extra
 type alias Juice =
     { finishIntroButtonText : String
     , advanceMonthButtonText : String
+    , youWonMessage : String
+    , youLostMessage : String
+    , youLostByDrawMessage : String
     }
+
+
+uniform : ( x, List x ) -> Generator x
+uniform ( x, xs ) =
+    Random.uniform x xs
 
 
 generator : Generator Juice
 generator =
     Random.constant
-        (\finishIntroButtonText advanceMonthButtonText ->
+        (\finishIntroButtonText advanceMonthButtonText youWonMessage youLostMessage youLostByDrawMessage ->
             { finishIntroButtonText = finishIntroButtonText
             , advanceMonthButtonText = advanceMonthButtonText
+            , youWonMessage = youWonMessage
+            , youLostMessage = youLostMessage
+            , youLostByDrawMessage = youLostByDrawMessage
             }
         )
-        |> Random.Extra.andMap
-            (Random.uniform
-                firstFinishIntroButtonText
-                otherFinishIntroButtonTexts
-            )
-        |> Random.Extra.andMap
-            (Random.uniform
-                firstAdvanceMonthButtonText
-                otherAdvanceMonthButtonTexts
-            )
+        |> Random.Extra.andMap (uniform finishIntroButtonTexts)
+        |> Random.Extra.andMap (uniform advanceMonthButtonTexts)
+        |> Random.Extra.andMap (uniform youWonMessageTexts)
+        |> Random.Extra.andMap (uniform youLostMessageTexts)
+        |> Random.Extra.andMap (uniform youLostByDrawMessageTexts)
 
 
-firstFinishIntroButtonText : String
-firstFinishIntroButtonText =
-    "Drž už zobak"
+finishIntroButtonTexts : ( String, List String )
+finishIntroButtonTexts =
+    ( "Drž už zobak"
+    , [ "Si moc dluhy"
+      , "No a co jako"
+      , "Drž pec cype"
+      ]
+    )
 
 
-otherFinishIntroButtonTexts : List String
-otherFinishIntroButtonTexts =
-    [ "Si moc dluhy"
-    , "No a co jako"
-    ]
+advanceMonthButtonTexts : ( String, List String )
+advanceMonthButtonTexts =
+    ( "Nojo furt"
+    , [ "Popojedem"
+      , "Nevim, další!"
+      ]
+    )
 
 
-firstAdvanceMonthButtonText : String
-firstAdvanceMonthButtonText =
-    "Nojo furt"
+youWonMessageTexts : ( String, List String )
+youWonMessageTexts =
+    ( "Fajně jak cyp!"
+    , [ "To byla haluz jak cyp!"
+      , "Jiřik to byl fajront jak cyp!"
+      , "Dobřes je zrušil!"
+      ]
+    )
 
 
-otherAdvanceMonthButtonTexts : List String
-otherAdvanceMonthButtonTexts =
-    [ "Popojedem"
-    , "Nevim, další!"
-    ]
+youLostMessageTexts : ( String, List String )
+youLostMessageTexts =
+    ( "Tak si chuj?"
+    , [ "Ty si kus cypa!"
+      , "Prohrals kamo!"
+      ]
+    )
+
+
+youLostByDrawMessageTexts : ( String, List String )
+youLostByDrawMessageTexts =
+    ( "Jak se musiš dělit tak chuj s tym! Přiště lepi!"
+    , [ "Prohrals kamo bo plichta je nanic!"
+      ]
+    )
