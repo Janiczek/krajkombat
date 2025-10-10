@@ -1,4 +1,4 @@
-module Stats exposing (Stats, init, regionRanking)
+module Stats exposing (Stats, init)
 
 
 type alias Stats =
@@ -10,16 +10,11 @@ type alias Stats =
     }
 
 
-regionRanking : { yourBbv : Int, otherBbvs : List Int } -> Int
-regionRanking { yourBbv, otherBbvs } =
-    Debug.todo "region ranking"
-
-
 init : Stats
 init =
     { ap = 100
     , apPerMonth = 100
     , gref = 1.0
-    , bref = 0.8
+    , bref = 1.0
     , bbv = 0
     }

@@ -104,8 +104,21 @@ update msg model =
                                     |> Game.advanceMonth
                         in
                         ( { model | gamePhase = Game.GameLoop newGame }
+                            |> advanceJuice
                         , Cmd.none
                         )
+
+
+advanceJuice : Model -> Model
+advanceJuice model =
+    let
+        ( juice, newSeed ) =
+            Random.step Juice.generator model.randomSeed
+    in
+    { model
+        | juice = juice
+        , randomSeed = newSeed
+    }
 
 
 updateGameLoop : Model -> (Game -> ( Model, Cmd Msg )) -> ( Model, Cmd Msg )
@@ -181,24 +194,24 @@ viewIntro juice =
 
 viewGameLoop : Juice -> Game -> List (Html Msg)
 viewGameLoop juice game =
+    let
+        ranking : Ranking
+        ranking =
+            Ranking.rank { you = game.you, others = game.others }
+    in
     [ UI.col []
         [ viewMonthStats
             juice.advanceMonthButtonText
             game.monthsLeft
-        , Html.div []
-            [ Html.h3 [] [ Html.text "Your Region:" ]
-            , viewRegion game.you
-            , Html.h3 [] [ Html.text "Other Regions:" ]
-            , Html.ul []
-                (game.others
-                    |> List.indexedMap
-                        (\i r ->
-                            Html.li []
-                                [ Html.text ("Region " ++ String.fromInt (i + 1) ++ ":")
-                                , viewRegion r
-                                ]
-                        )
-                )
+        , UI.row []
+            [ UI.col []
+                [ Html.h3 [] [ Html.text Region.youName ]
+                , viewYourStats game.you
+                ]
+            , UI.col []
+                [ Html.h3 [] [ Html.text "Ranking" ]
+                , viewRanking ranking
+                ]
             ]
         ]
     ]
@@ -294,8 +307,7 @@ viewRanking ranking =
                             , Html.td [ UI.cls "text-xl" ] [ Html.text (medalForRank rank) ]
                             , Html.td []
                                 [ names
-                                    |> List.intersperse ", "
-                                    |> String.concat
+                                    |> String.join ", "
                                     |> Html.text
                                 ]
                             , Html.td [ UI.cls "text-right" ] [ Html.text (String.fromInt bbv) ]
@@ -306,12 +318,11 @@ viewRanking ranking =
         ]
 
 
-viewRegion : Region -> Html Msg
-viewRegion region =
+viewYourStats : Region -> Html Msg
+viewYourStats region =
     UI.col []
         [ Html.h4 [] [ Html.text "Stats:" ]
         , viewStats region.stats
-        , Html.h4 [] [ Html.text "Upgrades:" ]
         , viewUpgrades region.upgrades
         ]
 
@@ -329,23 +340,21 @@ viewStats stats =
 
 viewUpgrades : Upgrades -> Html msg
 viewUpgrades upgrades =
-    Html.ul []
-        (Upgrades.all upgrades
-            |> List.map viewUpgrade
-        )
+    let
+        purchasedUpgrades : List String
+        purchasedUpgrades =
+            Upgrades.all upgrades
+                |> List.filter (\( _, hasUpgrade ) -> hasUpgrade)
+                |> List.map (\( name, _ ) -> name)
+    in
+    if List.isEmpty purchasedUpgrades then
+        UI.none
 
-
-viewUpgrade : ( String, Bool ) -> Html msg
-viewUpgrade ( name, hasUpgrade ) =
-    Html.li []
-        [ "{NAME}: {YES_NO}"
-            |> String.replace "{NAME}" name
-            |> String.replace "{YES_NO}"
-                (if hasUpgrade then
-                    "Yes"
-
-                 else
-                    "No"
+    else
+        UI.col []
+            [ Html.h4 [] [ Html.text "Upgrades:" ]
+            , Html.ul []
+                (purchasedUpgrades
+                    |> List.map (\name -> Html.li [] [ Html.text name ])
                 )
-            |> Html.text
-        ]
+            ]

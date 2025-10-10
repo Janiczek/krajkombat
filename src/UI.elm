@@ -2,6 +2,7 @@ module UI exposing
     ( btn
     , cls
     , col
+    , none
     , row
     )
 
@@ -33,3 +34,8 @@ row attrs children =
     Html.div
         (attrs ++ [ cls "flex flex-row gap-2" ])
         children
+
+
+none : Html msg
+none =
+    Html.text ""
