@@ -1,5 +1,6 @@
 module Main exposing (Flags, Model, Msg, main)
 
+import AssocSet
 import Browser
 import Game exposing (Game)
 import Html exposing (Html)
@@ -10,7 +11,7 @@ import Ranking exposing (Ranking)
 import Region exposing (Region)
 import Stats exposing (Stats)
 import UI
-import Upgrades exposing (Upgrades)
+import Upgrade exposing (Upgrade)
 
 
 type alias Flags =
@@ -343,14 +344,14 @@ viewStats stats =
         ]
 
 
-viewUpgrades : Upgrades -> Html msg
+viewUpgrades : AssocSet.Set Upgrade -> Html msg
 viewUpgrades upgrades =
     let
         purchasedUpgrades : List String
         purchasedUpgrades =
-            Upgrades.all upgrades
-                |> List.filter (\( _, hasUpgrade ) -> hasUpgrade)
-                |> List.map (\( name, _ ) -> name)
+            upgrades
+                |> AssocSet.toList
+                |> List.map (\upgrade -> Upgrade.name upgrade)
     in
     if List.isEmpty purchasedUpgrades then
         UI.none

@@ -1,5 +1,5 @@
 module Logic exposing
-    ( Outcome(..)
+    ( DecisionOutcome(..)
     , advanceMonthForRegion
     , presidentBribeChance
     , presidentUpgradeChance
@@ -8,7 +8,7 @@ module Logic exposing
 import Region exposing (Region)
 
 
-type Outcome
+type DecisionOutcome
     = AddToAp Int
     | AddToApPerMonth Int
     | AddToGref Float

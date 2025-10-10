@@ -1,0 +1,14 @@
+module TestFoo exposing (suite)
+
+import Expect exposing (Expectation)
+import Fuzz exposing (Fuzzer)
+import Ranking exposing (Ranking)
+import Test exposing (Test)
+
+
+
+suite : Test
+suite =
+    Test.describe "Foo"
+        [ Test.todo "foo"
+        ]

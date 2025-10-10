@@ -1,4 +1,12 @@
-module Game exposing (Game, Phase(..), Results(..), ResultsData, advanceMonth, end, gameInitGenerator)
+module Game exposing
+    ( Game
+    , Phase(..)
+    , Results(..)
+    , ResultsData
+    , advanceMonth
+    , end
+    , gameInitGenerator
+    )
 
 import Logic
 import Random exposing (Generator)
@@ -73,16 +81,17 @@ end game =
         ranking : Ranking
         ranking =
             Ranking.rank game
-
-        resultsData : ResultsData
-        resultsData =
-            { you = game.you
-            , others = game.others
-            , ranking = ranking
-            }
     in
     case ranking of
         fst :: _ ->
+            let
+                resultsData : ResultsData
+                resultsData =
+                    { you = game.you
+                    , others = game.others
+                    , ranking = ranking
+                    }
+            in
             if fst.names == [ Region.youName ] then
                 YouWon resultsData
 

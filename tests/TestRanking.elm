@@ -1,7 +1,6 @@
 module TestRanking exposing (suite)
 
-import Expect exposing (Expectation)
-import Fuzz exposing (Fuzzer)
+import Expect
 import Ranking exposing (Ranking)
 import Test exposing (Test)
 

@@ -5,17 +5,19 @@ module Region exposing
     , youName
     )
 
+import AssocSet
 import Random exposing (Generator)
 import Random.Extra
 import Random.List
 import Stats exposing (Stats)
-import Upgrades exposing (Upgrades)
+import Upgrade exposing (Upgrade)
 
 
 type alias Region =
     { name : String
     , stats : Stats
-    , upgrades : Upgrades
+    , upgrades : AssocSet.Set Upgrade
+    , upgradesAvailable : List { upgrade : Upgrade, monthsLeft : Int }
     }
 
 
@@ -48,7 +50,8 @@ generator name =
     Random.constant
         { name = name
         , stats = Stats.init
-        , upgrades = Upgrades.init
+        , upgrades = AssocSet.empty
+        , upgradesAvailable = []
         }
 
 

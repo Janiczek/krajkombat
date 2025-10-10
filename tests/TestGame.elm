@@ -1,5 +1,6 @@
 module TestGame exposing (suite)
 
+import AssocSet
 import Expect
 import Fuzz
 import Game exposing (Game, Results(..), end)
@@ -115,5 +116,6 @@ createRegion name bbv =
         , bref = 0.8
         , bbv = bbv
         }
-    , upgrades = { blackHatBootcamp = False }
+    , upgrades = AssocSet.empty
+    , upgradesAvailable = []
     }
