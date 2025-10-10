@@ -18,17 +18,17 @@ type alias StepState =
 
 rank :
     { game
-        | you : { region | name : String, stats : { stats | bbv : Int } }
-        , others : List { region | name : String, stats : { stats | bbv : Int } }
+        | you : { region | name : String, resources : { resources | bbv : Int } }
+        , others : List { region | name : String, resources : { resources | bbv : Int } }
     }
     -> Ranking
 rank { you, others } =
     let
         regionToItem :
-            { region | name : String, stats : { stats | bbv : Int } }
+            { region | name : String, resources : { resources | bbv : Int } }
             -> { name : String, bbv : Int }
         regionToItem r =
-            { name = r.name, bbv = r.stats.bbv }
+            { name = r.name, bbv = r.resources.bbv }
 
         allRegions : List { name : String, bbv : Int }
         allRegions =

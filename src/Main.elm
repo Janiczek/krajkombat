@@ -9,7 +9,7 @@ import Juice exposing (Juice)
 import Random
 import Ranking exposing (Ranking)
 import Region exposing (Region)
-import Stats exposing (Stats)
+import Resource exposing (Resources)
 import UI
 import Upgrade exposing (Upgrade)
 
@@ -89,24 +89,31 @@ update msg model =
                 \game ->
                     if game.monthsLeft <= 0 then
                         let
-                            results : Game.Results
-                            results =
+                            ( newGame, newSeed ) =
                                 game
-                                    |> Game.advanceMonth
+                                    |> Game.advanceMonth model.randomSeed
+
+                            results =
+                                newGame
                                     |> Game.end
                         in
-                        ( { model | gamePhase = Game.GameEnded results }
+                        ( { model
+                            | gamePhase = Game.GameEnded results
+                            , randomSeed = newSeed
+                          }
                         , Cmd.none
                         )
 
                     else
                         let
-                            newGame : Game
-                            newGame =
+                            ( newGame, newSeed ) =
                                 game
-                                    |> Game.advanceMonth
+                                    |> Game.advanceMonth model.randomSeed
                         in
-                        ( { model | gamePhase = Game.GameLoop newGame }
+                        ( { model
+                            | gamePhase = Game.GameLoop newGame
+                            , randomSeed = newSeed
+                          }
                             |> advanceJuice
                         , Cmd.none
                         )
@@ -328,19 +335,20 @@ viewYourStats : Region -> Html Msg
 viewYourStats region =
     UI.col []
         [ Html.h4 [] [ Html.text "Stats:" ]
-        , viewStats region.stats
+        , viewResources region.resources
         , viewUpgrades region.upgrades
         ]
 
 
-viewStats : Stats -> Html msg
-viewStats stats =
+viewResources : Resources -> Html msg
+viewResources stats =
     Html.ul []
         [ Html.li [] [ Html.text ("AP: " ++ String.fromInt stats.ap) ]
-        , Html.li [] [ Html.text ("AP per Month: " ++ String.fromInt stats.apPerMonth) ]
+        , Html.li [] [ Html.text ("AP/měsíc: " ++ String.fromInt stats.apPerMonth) ]
         , Html.li [] [ Html.text ("GREF: " ++ String.fromFloat stats.gref) ]
         , Html.li [] [ Html.text ("BREF: " ++ String.fromFloat stats.bref) ]
         , Html.li [] [ Html.text ("BBV: " ++ String.fromInt stats.bbv) ]
+        , Html.li [] [ Html.text ("BBV/měsíc: " ++ String.fromInt stats.bbvPerMonth) ]
         ]
 
 

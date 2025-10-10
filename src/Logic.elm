@@ -1,6 +1,5 @@
 module Logic exposing
-    ( DecisionOutcome(..)
-    , advanceMonthForRegion
+    ( advanceMonthForRegion
     , presidentBribeChance
     , presidentUpgradeChance
     )
@@ -8,36 +7,32 @@ module Logic exposing
 import Region exposing (Region)
 
 
-type DecisionOutcome
-    = AddToAp Int
-    | AddToApPerMonth Int
-    | AddToGref Float
-    | AddToBref Float
-    | AddToBbv Int
-
-
 presidentBribeChance :
-    { stats : { stats | bbv : Int }
+    { resources : { resources | bbv : Int }
     , bbvRanking : Int
     , regions : Int
     }
     -> Float
-presidentBribeChance { stats, bbvRanking, regions } =
+presidentBribeChance { resources, bbvRanking, regions } =
     Debug.todo "president bribe chance"
 
 
 presidentUpgradeChance :
-    { stats : { stats | bbv : Int }
+    { resources : { resources | bbv : Int }
     , bbvRanking : Int
     , regions : Int
     }
     -> Float
-presidentUpgradeChance { stats, bbvRanking, regions } =
+presidentUpgradeChance { resources, bbvRanking, regions } =
     Debug.todo "president upgrade chance"
 
 
 advanceMonthForRegion : Region -> Region
-advanceMonthForRegion ({ stats } as region) =
+advanceMonthForRegion ({ resources } as region) =
     { region
-        | stats = { stats | ap = stats.ap + stats.apPerMonth }
+        | resources =
+            { resources
+                | ap = resources.ap + resources.apPerMonth
+                , bbv = resources.bbv + resources.bbvPerMonth
+            }
     }

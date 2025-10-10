@@ -50,6 +50,34 @@
   * +BBV (BrankyBodyVteřiny)
   * -BBV
 
+
 * micromanagement: -AP, -AP/mo, +GREF (zaručí okamžitý úspěch akce / vyřeší problém, ale za cenu tvého času)
 
 * time limit: 24 měsíců, ultimátní kolo KrajKombat ligy a výsledek podle BBV
+
+
+
+# Creation of resources
+- [x] +AP: when advancing month
+- [ ] +AP: in some random events
+- [x] -AP: in investments
+- [x] +APPerMonth: in investments
+- [x] -APPerMonth: in investmentsLongTerm
+- [x] +GREF: in investments
+- [ ] -GREF
+- [ ] +BREF
+- [ ] -BREF
+- [ ] +BBV
+- [ ] -BBV
+- [ ] +BBVPerMonth
+- [ ] -BBVPerMonth
+
+# Usage of resources
+
+
+
+        Urgency ->
+            Random.uniform
+                [ sub 5 10 APPerMonth, subF 0.01 0.03 BREF ]
+                [ [ sub 10 20 AP, subF 0.01 0.02 BREF ]
+                ]

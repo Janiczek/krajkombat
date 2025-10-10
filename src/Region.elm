@@ -9,13 +9,13 @@ import AssocSet
 import Random exposing (Generator)
 import Random.Extra
 import Random.List
-import Stats exposing (Stats)
+import Resource exposing (Resources)
 import Upgrade exposing (Upgrade)
 
 
 type alias Region =
     { name : String
-    , stats : Stats
+    , resources : Resources
     , upgrades : AssocSet.Set Upgrade
     , upgradesAvailable : List { upgrade : Upgrade, monthsLeft : Int }
     }
@@ -49,7 +49,7 @@ generator : String -> Generator Region
 generator name =
     Random.constant
         { name = name
-        , stats = Stats.init
+        , resources = Resource.init
         , upgrades = AssocSet.empty
         , upgradesAvailable = []
         }
