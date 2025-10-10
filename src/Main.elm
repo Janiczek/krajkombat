@@ -3,10 +3,11 @@ module Main exposing (Flags, Model, Msg, main)
 import Browser
 import Game exposing (Game)
 import Html exposing (Html)
-import Html.Attributes
 import Html.Events
 import Random
+import Region exposing (Region)
 import Stats exposing (Stats)
+import UI
 import Upgrades exposing (Upgrades)
 
 
@@ -20,9 +21,13 @@ type alias Model =
 
 
 type Msg
-    = StartGame
+    = -- MainMenu
+      StartGame
+      -- Intro
     | FinishIntro
     | GameLoopInitialized Game
+      -- GameLoop
+    | AdvanceMonth
 
 
 main : Program Flags Model Msg
@@ -60,15 +65,60 @@ update msg model =
             , Cmd.none
             )
 
+        AdvanceMonth ->
+            updateGameLoop model <|
+                \game ->
+                    if game.monthsLeft <= 0 then
+                        let
+                            results =
+                                game
+                                    |> Game.advanceMonth
+                                    |> Game.end
+                        in
+                        case results of
+                            Err results_ ->
+                                ( { model | gamePhase = Game.GameOver results_ }
+                                , Cmd.none
+                                )
+
+                            Ok results_ ->
+                                ( { model | gamePhase = Game.GameWon results_ }
+                                , Cmd.none
+                                )
+
+                    else
+                        let
+                            newGame =
+                                game
+                                    |> Game.advanceMonth
+                        in
+                        ( { model | gamePhase = Game.GameLoop newGame }
+                        , Cmd.none
+                        )
+
+
+updateGameLoop : Model -> (Game -> ( Model, Cmd Msg )) -> ( Model, Cmd Msg )
+updateGameLoop model f =
+    case model.gamePhase of
+        Game.GameLoop game ->
+            f game
+
+        Game.MainMenu ->
+            ( model, Cmd.none )
+
+        Game.Intro ->
+            ( model, Cmd.none )
+
+        Game.GameOver _ ->
+            ( model, Cmd.none )
+
+        Game.GameWon _ ->
+            ( model, Cmd.none )
+
 
 title : String
 title =
     "KrajKombat: MSK Edition"
-
-
-cls : String -> Html.Attribute msg
-cls =
-    Html.Attributes.class
 
 
 view : Model -> Browser.Document Msg
@@ -76,7 +126,7 @@ view model =
     { title = title
     , body =
         [ Html.div
-            [ cls "font-mono p-2" ]
+            [ UI.cls "font-mono p-2" ]
             (viewGamePhase model.gamePhase)
         ]
     }
@@ -101,28 +151,11 @@ viewGamePhase phase =
             viewGameWon results
 
 
-btn : List (Html.Attribute Msg) -> String -> Html Msg
-btn attrs label =
-    Html.button
-        (attrs ++ [ cls "bg-blue-500 text-white px-[1ch] rounded-md w-fit" ])
-        [ Html.text label ]
-
-
-col : List (Html.Attribute Msg) -> List (Html Msg) -> Html Msg
-col attrs children =
-    Html.div (attrs ++ [ cls "flex flex-col gap-2" ]) children
-
-
-row : List (Html.Attribute Msg) -> List (Html Msg) -> Html Msg
-row attrs children =
-    Html.div (attrs ++ [ cls "flex flex-row gap-2" ]) children
-
-
 viewMainMenu : List (Html Msg)
 viewMainMenu =
-    [ col []
+    [ UI.col []
         [ Html.h1 [] [ Html.text title ]
-        , btn
+        , UI.btn
             [ Html.Events.onClick StartGame ]
             "Start Game"
         ]
@@ -131,9 +164,9 @@ viewMainMenu =
 
 viewIntro : List (Html Msg)
 viewIntro =
-    [ col []
+    [ UI.col []
         [ Html.text "TODO intro - story, exposition, blablabla"
-        , btn
+        , UI.btn
             [ Html.Events.onClick FinishIntro ]
             "Finish Intro"
         ]
@@ -142,8 +175,9 @@ viewIntro =
 
 viewGameLoop : Game -> List (Html Msg)
 viewGameLoop game =
-    [ col []
+    [ UI.col []
         [ Html.h2 [] [ Html.text "GameLoop Phase" ]
+        , UI.btn [ Html.Events.onClick AdvanceMonth ] "Advance Month"
         , Html.div []
             [ Html.h3 [] [ Html.text "Your Region:" ]
             , viewRegion game.you
@@ -167,7 +201,7 @@ viewGameLoop game =
 
 viewGameOver : Game.Results -> List (Html Msg)
 viewGameOver results =
-    [ col []
+    [ UI.col []
         [ Html.h2 [] [ Html.text "GameOver Phase" ]
         , Html.h3 [] [ Html.text "Your Results:" ]
         , viewRegion results.you
@@ -188,7 +222,7 @@ viewGameOver results =
 
 viewGameWon : Game.Results -> List (Html Msg)
 viewGameWon results =
-    [ col []
+    [ UI.col []
         [ Html.h2 [] [ Html.text "GameWon Phase" ]
         , Html.h3 [] [ Html.text "Your Results:" ]
         , viewRegion results.you
@@ -202,9 +236,9 @@ viewGameWon results =
     ]
 
 
-viewRegion : Game.Region -> Html Msg
+viewRegion : Region -> Html Msg
 viewRegion region =
-    col []
+    UI.col []
         [ Html.h4 [] [ Html.text "Stats:" ]
         , viewStats region.stats
         , Html.h4 [] [ Html.text "Upgrades:" ]

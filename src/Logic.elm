@@ -1,6 +1,11 @@
-module Logic exposing (Outcome(..), presidentBribeChance, presidentUpgradeChance)
+module Logic exposing
+    ( Outcome(..)
+    , advanceMonthForRegion
+    , presidentBribeChance
+    , presidentUpgradeChance
+    )
 
-import Game
+import Region exposing (Region)
 
 
 type Outcome
@@ -31,8 +36,8 @@ presidentUpgradeChance { stats, bbvRanking, regions } =
     Debug.todo "president upgrade chance"
 
 
-advanceMonth : Game.Region -> Game.Region
-advanceMonth ({ stats } as region) =
+advanceMonthForRegion : Region -> Region
+advanceMonthForRegion ({ stats } as region) =
     { region
         | stats = { stats | ap = stats.ap + stats.apPerMonth }
     }

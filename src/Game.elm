@@ -1,9 +1,9 @@
-module Game exposing (Game, Phase(..), Region, Results, gameInitGenerator)
+module Game exposing (Game, Phase(..), Results, advanceMonth, end, gameInitGenerator)
 
+import Logic
 import Random exposing (Generator)
 import Random.Extra
-import Stats exposing (Stats)
-import Upgrades exposing (Upgrades)
+import Region exposing (Region)
 
 
 type Phase
@@ -12,12 +12,6 @@ type Phase
     | GameLoop Game
     | GameOver Results
     | GameWon Results
-
-
-type alias Region =
-    { stats : Stats
-    , upgrades : Upgrades
-    }
 
 
 type alias Results =
@@ -42,13 +36,30 @@ gameInitGenerator =
             , monthsLeft = 24
             }
         )
-        |> Random.Extra.andMap regionGenerator
-        |> Random.Extra.andMap (Random.list 10 regionGenerator)
+        |> Random.Extra.andMap Region.generator
+        |> Random.Extra.andMap (Random.list 3 Region.generator)
 
 
-regionGenerator : Generator Region
-regionGenerator =
-    Random.constant
-        { stats = Stats.init
-        , upgrades = Upgrades.init
-        }
+advanceMonth : Game -> Game
+advanceMonth game =
+    let
+        newYou =
+            Logic.advanceMonthForRegion game.you
+
+        newOthers =
+            game.others
+                |> List.map Logic.advanceMonthForRegion
+
+        newGame =
+            { game
+                | you = newYou
+                , others = newOthers
+                , monthsLeft = game.monthsLeft - 1
+            }
+    in
+    newGame
+
+
+end : Game -> Result Results Results
+end game =
+    Debug.todo "Game.end"
