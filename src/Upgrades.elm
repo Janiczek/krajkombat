@@ -1,4 +1,4 @@
-module Upgrades exposing (Upgrades, init)
+module Upgrades exposing (Upgrades, all, init)
 
 
 type alias Upgrades =
@@ -10,3 +10,9 @@ init : Upgrades
 init =
     { blackHatBootcamp = False
     }
+
+
+all : Upgrades -> List ( String, Bool )
+all upgrades =
+    [ ( "Black Hat Bootcamp", upgrades.blackHatBootcamp )
+    ]

@@ -1,5 +1,7 @@
 module Logic exposing (Outcome(..), presidentBribeChance, presidentUpgradeChance)
 
+import Game
+
 
 type Outcome
     = AddToAp Int
@@ -27,3 +29,10 @@ presidentUpgradeChance :
     -> Float
 presidentUpgradeChance { stats, bbvRanking, regions } =
     Debug.todo "president upgrade chance"
+
+
+advanceMonth : Game.Region -> Game.Region
+advanceMonth ({ stats } as region) =
+    { region
+        | stats = { stats | ap = stats.ap + stats.apPerMonth }
+    }

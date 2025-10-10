@@ -8,6 +8,7 @@ import Upgrades exposing (Upgrades)
 
 type Phase
     = MainMenu
+    | Intro
     | GameLoop Game
     | GameOver Results
     | GameWon Results

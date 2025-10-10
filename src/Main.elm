@@ -3,6 +3,7 @@ module Main exposing (Flags, Model, Msg, main)
 import Browser
 import Game exposing (Game)
 import Html exposing (Html)
+import Html.Attributes
 import Html.Events
 import Random
 import Stats exposing (Stats)
@@ -20,6 +21,7 @@ type alias Model =
 
 type Msg
     = StartGame
+    | FinishIntro
     | GameLoopInitialized Game
 
 
@@ -44,6 +46,11 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         StartGame ->
+            ( { model | gamePhase = Game.Intro }
+            , Cmd.none
+            )
+
+        FinishIntro ->
             ( model
             , Random.generate GameLoopInitialized Game.gameInitGenerator
             )
@@ -59,10 +66,19 @@ title =
     "KrajKombat: MSK Edition"
 
 
+cls : String -> Html.Attribute msg
+cls =
+    Html.Attributes.class
+
+
 view : Model -> Browser.Document Msg
 view model =
     { title = title
-    , body = viewGamePhase model.gamePhase
+    , body =
+        [ Html.div
+            [ cls "font-mono p-2" ]
+            (viewGamePhase model.gamePhase)
+        ]
     }
 
 
@@ -71,6 +87,9 @@ viewGamePhase phase =
     case phase of
         Game.MainMenu ->
             viewMainMenu
+
+        Game.Intro ->
+            viewIntro
 
         Game.GameLoop game ->
             viewGameLoop game
@@ -82,24 +101,79 @@ viewGamePhase phase =
             viewGameWon results
 
 
+btn : List (Html.Attribute Msg) -> String -> Html Msg
+btn attrs label =
+    Html.button
+        (attrs ++ [ cls "bg-blue-500 text-white px-[1ch] rounded-md w-fit" ])
+        [ Html.text label ]
+
+
+col : List (Html.Attribute Msg) -> List (Html Msg) -> Html Msg
+col attrs children =
+    Html.div (attrs ++ [ cls "flex flex-col gap-2" ]) children
+
+
+row : List (Html.Attribute Msg) -> List (Html Msg) -> Html Msg
+row attrs children =
+    Html.div (attrs ++ [ cls "flex flex-row gap-2" ]) children
+
+
 viewMainMenu : List (Html Msg)
 viewMainMenu =
-    [ Html.h1 [] [ Html.text title ]
-    , Html.button
-        [ Html.Events.onClick StartGame ]
-        [ Html.text "Start Game" ]
+    [ col []
+        [ Html.h1 [] [ Html.text title ]
+        , btn
+            [ Html.Events.onClick StartGame ]
+            "Start Game"
+        ]
+    ]
+
+
+viewIntro : List (Html Msg)
+viewIntro =
+    [ col []
+        [ Html.text "TODO intro - story, exposition, blablabla"
+        , btn
+            [ Html.Events.onClick FinishIntro ]
+            "Finish Intro"
+        ]
     ]
 
 
 viewGameLoop : Game -> List (Html Msg)
 viewGameLoop game =
-    [ Html.h2 [] [ Html.text "GameLoop Phase" ]
-    , Html.div []
-        [ Html.h3 [] [ Html.text "Your Region:" ]
-        , viewRegion game.you
+    [ col []
+        [ Html.h2 [] [ Html.text "GameLoop Phase" ]
+        , Html.div []
+            [ Html.h3 [] [ Html.text "Your Region:" ]
+            , viewRegion game.you
+            , Html.h3 [] [ Html.text "Other Regions:" ]
+            , Html.ul []
+                (game.others
+                    |> List.indexedMap
+                        (\i r ->
+                            Html.li []
+                                [ Html.text ("Region " ++ String.fromInt (i + 1) ++ ":")
+                                , viewRegion r
+                                ]
+                        )
+                )
+            , Html.div []
+                [ Html.text ("Months left: " ++ String.fromInt game.monthsLeft) ]
+            ]
+        ]
+    ]
+
+
+viewGameOver : Game.Results -> List (Html Msg)
+viewGameOver results =
+    [ col []
+        [ Html.h2 [] [ Html.text "GameOver Phase" ]
+        , Html.h3 [] [ Html.text "Your Results:" ]
+        , viewRegion results.you
         , Html.h3 [] [ Html.text "Other Regions:" ]
         , Html.ul []
-            (game.others
+            (results.others
                 |> List.indexedMap
                     (\i r ->
                         Html.li []
@@ -108,48 +182,29 @@ viewGameLoop game =
                             ]
                     )
             )
-        , Html.div []
-            [ Html.text ("Months left: " ++ String.fromInt game.monthsLeft) ]
         ]
-    ]
-
-
-viewGameOver : Game.Results -> List (Html Msg)
-viewGameOver results =
-    [ Html.h2 [] [ Html.text "GameOver Phase" ]
-    , Html.h3 [] [ Html.text "Your Results:" ]
-    , viewRegion results.you
-    , Html.h3 [] [ Html.text "Other Regions:" ]
-    , Html.ul []
-        (results.others
-            |> List.indexedMap
-                (\i r ->
-                    Html.li []
-                        [ Html.text ("Region " ++ String.fromInt (i + 1) ++ ":")
-                        , viewRegion r
-                        ]
-                )
-        )
     ]
 
 
 viewGameWon : Game.Results -> List (Html Msg)
 viewGameWon results =
-    [ Html.h2 [] [ Html.text "GameWon Phase" ]
-    , Html.h3 [] [ Html.text "Your Results:" ]
-    , viewRegion results.you
-    , Html.h3 [] [ Html.text "Other Regions:" ]
-    , Html.ul []
-        (List.indexedMap
-            (\i r -> Html.li [] [ Html.text ("Region " ++ String.fromInt (i + 1) ++ ":"), viewRegion r ])
-            results.others
-        )
+    [ col []
+        [ Html.h2 [] [ Html.text "GameWon Phase" ]
+        , Html.h3 [] [ Html.text "Your Results:" ]
+        , viewRegion results.you
+        , Html.h3 [] [ Html.text "Other Regions:" ]
+        , Html.ul []
+            (List.indexedMap
+                (\i r -> Html.li [] [ Html.text ("Region " ++ String.fromInt (i + 1) ++ ":"), viewRegion r ])
+                results.others
+            )
+        ]
     ]
 
 
-viewRegion : Game.Region -> Html msg
+viewRegion : Game.Region -> Html Msg
 viewRegion region =
-    Html.div []
+    col []
         [ Html.h4 [] [ Html.text "Stats:" ]
         , viewStats region.stats
         , Html.h4 [] [ Html.text "Upgrades:" ]
@@ -171,12 +226,13 @@ viewStats stats =
 viewUpgrades : Upgrades -> Html msg
 viewUpgrades upgrades =
     Html.ul []
-        [ viewUpgrade "Black Hat Bootcamp" upgrades.blackHatBootcamp
-        ]
+        (Upgrades.all upgrades
+            |> List.map viewUpgrade
+        )
 
 
-viewUpgrade : String -> Bool -> Html msg
-viewUpgrade name hasUpgrade =
+viewUpgrade : ( String, Bool ) -> Html msg
+viewUpgrade ( name, hasUpgrade ) =
     Html.li []
         [ "{NAME}: {YES_NO}"
             |> String.replace "{NAME}" name
