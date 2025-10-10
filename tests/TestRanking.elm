@@ -6,7 +6,7 @@ import Test exposing (Test)
 
 
 type alias MinRegion =
-    { name : String, stats : { bbv : Int } }
+    { name : String, resources : { bbv : Int } }
 
 
 suite : Test
@@ -17,17 +17,17 @@ suite =
                 let
                     you : MinRegion
                     you =
-                        { name = "MSK", stats = { bbv = 100 } }
+                        { name = "MSK", resources = { bbv = 100 } }
 
                     others : List MinRegion
                     others =
-                        [ { name = "Praha", stats = { bbv = 50 } }
-                        , { name = "Brno", stats = { bbv = 30 } }
-                        , { name = "Ostrava", stats = { bbv = 20 } }
-                        , { name = "Plzeň", stats = { bbv = 10 } }
-                        , { name = "Ústí nad Labem", stats = { bbv = 5 } }
-                        , { name = "Liberec", stats = { bbv = 3 } }
-                        , { name = "Hradec Králové", stats = { bbv = 2 } }
+                        [ { name = "Praha", resources = { bbv = 50 } }
+                        , { name = "Brno", resources = { bbv = 30 } }
+                        , { name = "Ostrava", resources = { bbv = 20 } }
+                        , { name = "Plzeň", resources = { bbv = 10 } }
+                        , { name = "Ústí nad Labem", resources = { bbv = 5 } }
+                        , { name = "Liberec", resources = { bbv = 3 } }
+                        , { name = "Hradec Králové", resources = { bbv = 2 } }
                         ]
 
                     ranking : Ranking
@@ -49,17 +49,17 @@ suite =
                 let
                     you : MinRegion
                     you =
-                        { name = "MSK", stats = { bbv = 100 } }
+                        { name = "MSK", resources = { bbv = 100 } }
 
                     others : List MinRegion
                     others =
-                        [ { name = "Praha", stats = { bbv = 100 } }
-                        , { name = "Brno", stats = { bbv = 30 } }
-                        , { name = "Ostrava", stats = { bbv = 20 } }
-                        , { name = "Plzeň", stats = { bbv = 20 } }
-                        , { name = "Ústí nad Labem", stats = { bbv = 5 } }
-                        , { name = "Liberec", stats = { bbv = 3 } }
-                        , { name = "Hradec Králové", stats = { bbv = 2 } }
+                        [ { name = "Praha", resources = { bbv = 100 } }
+                        , { name = "Brno", resources = { bbv = 30 } }
+                        , { name = "Ostrava", resources = { bbv = 20 } }
+                        , { name = "Plzeň", resources = { bbv = 20 } }
+                        , { name = "Ústí nad Labem", resources = { bbv = 5 } }
+                        , { name = "Liberec", resources = { bbv = 3 } }
+                        , { name = "Hradec Králové", resources = { bbv = 2 } }
                         ]
 
                     ranking : Ranking

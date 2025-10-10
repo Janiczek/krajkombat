@@ -5,6 +5,7 @@ import Expect
 import Fuzz
 import Game exposing (Game, Results(..), end)
 import Region exposing (Region, youName)
+import Resource
 import Test exposing (Test)
 
 
@@ -23,6 +24,7 @@ suite =
                                 , createRegion "Brno" 90
                                 ]
                             , monthsLeft = 0
+                            , availableDecisions = []
                             }
 
                         result : Results
@@ -46,6 +48,7 @@ suite =
                                 , createRegion "Brno" 90
                                 ]
                             , monthsLeft = 0
+                            , availableDecisions = []
                             }
 
                         result : Results
@@ -69,6 +72,7 @@ suite =
                                 , createRegion "Brno" 90
                                 ]
                             , monthsLeft = 0
+                            , availableDecisions = []
                             }
 
                         result : Results
@@ -87,6 +91,7 @@ suite =
                         { you = createRegion youName youBbv
                         , others = List.indexedMap (\i bbv -> createRegion ("Region" ++ String.fromInt i) bbv) otherBbvs
                         , monthsLeft = monthsLeft
+                        , availableDecisions = []
                         }
                     )
                     (Fuzz.intRange 0 1000)
@@ -108,14 +113,12 @@ suite =
 
 createRegion : String -> Int -> Region
 createRegion name bbv =
+    let
+        initResources =
+            Resource.init
+    in
     { name = name
-    , stats =
-        { ap = 100
-        , apPerMonth = 100
-        , gref = 1.0
-        , bref = 0.8
-        , bbv = bbv
-        }
+    , resources = { initResources | bbv = bbv }
     , upgrades = AssocSet.empty
     , upgradesAvailable = []
     }
