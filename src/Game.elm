@@ -1,4 +1,4 @@
-module Game exposing (Game, Phase(..), Results(..), advanceMonth, end, gameInitGenerator)
+module Game exposing (Game, Phase(..), Results(..), ResultsData, advanceMonth, end, gameInitGenerator)
 
 import Logic
 import Random exposing (Generator)

@@ -50,5 +50,5 @@ firstAdvanceMonthButtonText =
 otherAdvanceMonthButtonTexts : List String
 otherAdvanceMonthButtonTexts =
     [ "Popojedem"
-    , "Nevím, další!"
+    , "Nevim, další!"
     ]

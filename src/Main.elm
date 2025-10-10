@@ -31,6 +31,8 @@ type Msg
     | FinishIntro
       -- GameLoop
     | AdvanceMonth
+      -- GameEnded
+    | BackToMainMenu
 
 
 main : Program Flags Model Msg
@@ -108,6 +110,11 @@ update msg model =
                         , Cmd.none
                         )
 
+        BackToMainMenu ->
+            ( { model | gamePhase = Game.MainMenu }
+            , Cmd.none
+            )
+
 
 advanceJuice : Model -> Model
 advanceJuice model =
@@ -139,7 +146,7 @@ updateGameLoop model f =
 
 title : String
 title =
-    "KrajKombat: MSK Edition"
+    "KrajKombat"
 
 
 view : Model -> Browser.Document Msg
@@ -171,11 +178,10 @@ viewGamePhase juice phase =
 
 viewMainMenu : List (Html Msg)
 viewMainMenu =
-    [ UI.col []
-        [ Html.h1 [] [ Html.text title ]
-        , UI.btn
-            [ Html.Events.onClick StartGame ]
-            "Cože"
+    [ UI.col [ UI.cls "items-center justify-center h-[60dvh] min-h-fit" ]
+        [ Html.h1 [ UI.cls "font-bold text-2xl" ] [ Html.text title ]
+        , Html.h2 [ UI.cls "text-sm" ] [ Html.text "Zadavatel: Game Devs Ostrava / Zpracovatel: Martin Janiczek" ]
+        , UI.btn [ Html.Events.onClick StartGame ] "Cože"
         ]
     ]
 
@@ -231,28 +237,27 @@ viewGameEnded : Game.Results -> List (Html Msg)
 viewGameEnded results =
     case results of
         Game.YouWon data ->
-            [ UI.col []
-                [ Html.h2 [] [ Html.text "Dobřes je zrušil!" ]
-                , viewRanking data.ranking
-                ]
-            ]
+            viewGameEnded_ "Dobřes je zrušil!" data
 
         Game.YouLost data ->
-            [ UI.col []
-                [ Html.h2 [] [ Html.text "Prohrals kamo!" ]
-                , viewRanking data.ranking
-                ]
-            ]
+            viewGameEnded_ "Prohrals kamo!" data
 
         Game.YouLostByDraw data ->
-            [ UI.col []
-                [ Html.h2 [] [ Html.text "Prohrals kamo bo plichta neplati!" ]
-                , viewRanking data.ranking
-                ]
-            ]
+            viewGameEnded_ "Prohrals kamo bo plichta neplati!" data
 
         Game.Bug ->
             [ Html.h2 [] [ Html.text "Ups, se to rozbilo" ] ]
+
+
+viewGameEnded_ : String -> Game.ResultsData -> List (Html Msg)
+viewGameEnded_ message resultsData =
+    [ UI.col []
+        [ Html.h2 [] [ Html.text message ]
+        , viewRanking resultsData.ranking
+        , UI.btn [ Html.Events.onClick StartGame ] "Hrat znovu"
+        , UI.btn [ Html.Events.onClick BackToMainMenu ] "Do menu"
+        ]
+    ]
 
 
 medalForRank : Int -> String
