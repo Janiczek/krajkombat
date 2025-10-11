@@ -8,6 +8,7 @@ import Html.Attributes
 import Html.Events
 import Juice exposing (Juice)
 import List.Extra
+import Markdown
 import PluralRules
 import PluralRules.Cz
 import Random
@@ -259,23 +260,80 @@ viewMainMenu =
             [ Html.text "Zadavatel: Game Devs Ostrava / Zpracovatel: "
             , UI.link "https://bsky.app/profile/janiczek.cz" "Martin Janiczek"
             ]
-        , Html.h2 [ UI.cls "text-sm" ]
+        , UI.sprite UI.CharNormal
+        , UI.btn [ Html.Events.onClick StartGame ] "Cože"
+        , Html.h2 [ UI.cls "text-sm pt-4 text-gray-600" ]
             [ Html.text "Grafika: "
             , UI.link "https://kenney.nl/assets/toon-characters-1" "Kenney.nl"
             ]
-        , UI.btn [ Html.Events.onClick StartGame ] "Cože"
         ]
     ]
+
+
+viewIntroSection : String -> String -> Html Msg
+viewIntroSection thought content =
+    Html.tr []
+        [ Html.td
+            [ UI.cls "text-right align-top text-2xl font-handwriting -rotate-10 pt-4 pr-4 text-red-600" ]
+            [ Html.span [] [ Html.text thought ] ]
+        , Html.td [ UI.cls "pb-[2ch]" ]
+            [ Html.p
+                [ UI.cls "text-sm max-w-[80ch] leading-relaxed" ]
+                [ Markdown.toHtml [] content ]
+            ]
+        ]
 
 
 viewIntro : Juice -> List (Html Msg)
 viewIntro juice =
     [ UI.col []
-        [ Html.text "TODO intro - story, exposition, blablabla"
-        , UI.btn
-            [ Html.Events.onClick FinishIntro ]
-            -- "Seš moc dlouhej"
-            juice.finishIntroButtonText
+        [ UI.col []
+            [ Html.table []
+                [ Html.tbody []
+                    [ Html.tr []
+                        [ Html.td [] [ Html.div [ UI.cls "flex flex-row justify-end" ] [ UI.sprite UI.CharExplain ] ]
+                        , Html.td [] []
+                        ]
+                    , viewIntroSection "Lore dump" """
+Je rok 2028, čerstvě po prezidentských volbách, které dopadly katastrofálně a
+prezidentem je nyní Vladimír Bico, který ČR předělal po vzoru Donalda Trumpa a
+jiných jemu podobných a naprosto zpřeházel priority, podle kterých by se ČR měla
+ubírat.
+"""
+                    , viewIntroSection "Furt lore dump..." """
+Převládá populismus a honění mediálních bodíků, takže navzdory globální krizi
+jde jen o jediné (tedy aspoň pro prezidenta): KrajKombat. Z důvodu nedostatku
+designérů si budete muset představit něco mezi fotbalem a Hunger Games. Jestli
+to je jen jeho šílená úchylka, nebo se toto děje i jinde, to nikdo neví. Všem
+normálním lidem nezbývá než se snažit zachovat si nějaký zbytek normálnosti a
+udělat jen to nejnutnější, aby prezident dal pokoj s nesmyslnými nároky.
+"""
+                    , viewIntroSection "Konečně něco o mně" """
+**Ty jsi hejtman Moravskoslezského kraje Ing. Josef Bělica**, a KrajKombat ignorovat
+nemůžeš, jelikož to je jediný způsoob, jak si kraje ČR můžou získat přízeň
+prezidenta (a nebýt v příštím volebním období nemilosrdně seškrtán).
+"""
+                    , viewIntroSection "Co musim dělat" """
+**Tvým úkolem je vyhrát státní ligu KrajKombatu.** Šplhání v žebříčku pomocí
+získávání BranekBodůVteřin (ano, vážně...) budeš muset žonglovat s dalšími
+povinnostmi hejtmana: aby lidi měli střechu nad hlavou, práci, jídlo, atakdále
+atakdále.  Zároveň, jelikož všichni kromě prezidenta chápou, jak pošahaná celá
+ta jeho soutěž je, možná nebude od věci to trochu ocheatovat...
+"""
+                    , viewIntroSection "Ale jo furt..." """
+Pamatuj, **máš čas 12 měsíců** do vyhlášení vítěze KrajKombatu.
+"""
+                    ]
+                , Html.tr []
+                    [ Html.td [] []
+                    , Html.td []
+                        [ UI.btn
+                            [ Html.Events.onClick FinishIntro ]
+                            juice.finishIntroButtonText
+                        ]
+                    ]
+                ]
+            ]
         ]
     ]
 

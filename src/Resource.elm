@@ -26,7 +26,7 @@ init =
     , gref = 60
     , bref = 40
     , bbv = 0
-    , bbvPerMonth = 4 -- just under 100 after 24 months
+    , bbvPerMonth = 4
     }
 
 

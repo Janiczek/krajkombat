@@ -10,7 +10,7 @@
 - [ ] game loop: showing new urgencies after some decisions
 - [ ] game loop: urgency fail consequences
 
-- [x] remaining months counter (starts at 24)
+- [x] remaining months counter (starts at 12)
 - [x] resource: AP (starts at default APmo)
 - [x] resource: APmo (starts at 100)
 - [x] resource: BBV (starts at 0)
@@ -47,6 +47,8 @@
 - [x] upgrades: disable buy button if can't buy
 
 
+- [ ] job/... market with other regions?
+
 * random eventy:
   * +AP
   * -AP
@@ -58,7 +60,7 @@
 
 * micromanagement: -AP, -AP/mo, +GREF (zaručí okamžitý úspěch akce / vyřeší problém, ale za cenu tvého času)
 
-* time limit: 24 měsíců, ultimátní kolo KrajKombat ligy a výsledek podle BBV
+* time limit: 12 měsíců, ultimátní kolo KrajKombat ligy a výsledek podle BBV
 
 
 

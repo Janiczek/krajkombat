@@ -18,7 +18,7 @@ aby věci fungovaly, lidi měli práci, jídlo, vodu, energie, střechu nad hlav
 ale zároveň musíš splnit prezidentovy nároky a postarat se o dobré umístění
 tvého kraje v KrajKombatu.
 
-Máš čas 24 měsíců do finálního kola KrajKombat her.
+Máš čas 12 měsíců do finálního kola KrajKombat her.
 
 ## Herní systémy:
 
@@ -59,7 +59,7 @@ Máš čas 24 měsíců do finálního kola KrajKombat her.
 
 * micromanagement: -AP, -AP/mo, +GREF (zaručí okamžitý úspěch akce / vyřeší problém, ale za cenu tvého času)
 
-* time limit: 24 měsíců, ultimátní kolo KrajKombat ligy a výsledek podle BBV
+* time limit: 12 měsíců, ultimátní kolo KrajKombat ligy a výsledek podle BBV
 
 ## Možné úřady, které by šlo použít
 

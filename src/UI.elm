@@ -1,5 +1,6 @@
 module UI exposing
-    ( btn
+    ( Sprite(..)
+    , btn
     , cls
     , col
     , float
@@ -10,6 +11,7 @@ module UI exposing
     , none
     , row
     , section
+    , sprite
     )
 
 import Html exposing (Html)
@@ -98,3 +100,63 @@ modal attrs children =
             (attrs ++ [ cls "bg-slate-50 rounded-lg shadow-xl max-w-md w-full mx-4 p-4" ])
             children
         ]
+
+
+type Sprite
+    = CharNormal
+    | CharWin
+    | CharDraw
+    | CharLose
+    | CharExplain
+
+
+spriteUrl : Sprite -> String
+spriteUrl s =
+    case s of
+        CharNormal ->
+            "char_normal.png"
+
+        CharWin ->
+            "char_win.png"
+
+        CharDraw ->
+            "char_draw.png"
+
+        CharLose ->
+            "char_lose.png"
+
+        CharExplain ->
+            "char_explain.png"
+
+
+spriteSize : Sprite -> ( Int, Int )
+spriteSize s =
+    case s of
+        CharNormal ->
+            ( 156, 203 )
+
+        CharWin ->
+            ( 166, 216 )
+
+        CharDraw ->
+            ( 135, 203 )
+
+        CharLose ->
+            ( 198, 231 )
+
+        CharExplain ->
+            ( 190, 205 )
+
+
+sprite : Sprite -> Html msg
+sprite s =
+    let
+        ( w, h ) =
+            spriteSize s
+    in
+    Html.img
+        [ Html.Attributes.width (w // 2)
+        , Html.Attributes.height (h // 2)
+        , Html.Attributes.src (spriteUrl s)
+        ]
+        []

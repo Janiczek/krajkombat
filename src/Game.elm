@@ -68,7 +68,7 @@ gameInitGenerator =
         (\you others ->
             { you = you
             , others = others
-            , monthsLeft = 24
+            , monthsLeft = 12
             }
         )
         |> Random.Extra.andMap (Region.initGenerator Region.youName)

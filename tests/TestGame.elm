@@ -91,7 +91,7 @@ suite =
                     )
                     (Fuzz.intRange 0 1000)
                     (Fuzz.list (Fuzz.intRange 0 1000) |> Fuzz.map (List.take 3))
-                    (Fuzz.intRange 0 24)
+                    (Fuzz.intRange 0 12)
                 )
                 "end - fuzz - never Bug"
                 (\game ->
