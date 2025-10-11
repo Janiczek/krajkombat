@@ -4,6 +4,8 @@ module ResourceDelta exposing
     , addF
     , bundleGenerator
     , floatValue
+    , isBBV
+    , isBBVPerMonth
     , sub
     , subF
     )
@@ -81,3 +83,23 @@ bundleGenerator generator =
                             )
                         )
             )
+
+
+isBBV : ResourceDelta -> Bool
+isBBV delta =
+    case delta of
+        BBV _ ->
+            True
+
+        _ ->
+            False
+
+
+isBBVPerMonth : ResourceDelta -> Bool
+isBBVPerMonth delta =
+    case delta of
+        BBVPerMonth _ ->
+            True
+
+        _ ->
+            False

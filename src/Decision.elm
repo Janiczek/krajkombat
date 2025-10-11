@@ -1,7 +1,8 @@
 module Decision exposing
     ( Decision
-    , DecisionType(..)
+    , Type(..)
     , listGenerator
+    , typeLabel
     )
 
 import Dict
@@ -11,14 +12,14 @@ import Resource exposing (Resources)
 import ResourceDelta exposing (ResourceDelta(..), add, addF, sub, subF)
 
 
-type DecisionType
+type Type
     = Investment
     | InvestmentLongTerm
     | Prevention
 
 
 type alias Decision =
-    { type_ : DecisionType
+    { type_ : Type
     , flavorText : String
     , deltas : List ResourceDelta
     }
@@ -26,7 +27,7 @@ type alias Decision =
 
 maxDecisionsPerMonth : Int
 maxDecisionsPerMonth =
-    10
+    6
 
 
 listGenerator : Resources -> Generator (List Decision)
@@ -38,7 +39,7 @@ listGenerator resources =
 
 decisionGenerator : Generator Decision
 decisionGenerator =
-    decisionTypeGenerator
+    typeGenerator
         |> Random.andThen
             (\type_ ->
                 Random.constant
@@ -52,8 +53,8 @@ decisionGenerator =
             )
 
 
-decisionTypeGenerator : Generator DecisionType
-decisionTypeGenerator =
+typeGenerator : Generator Type
+typeGenerator =
     Random.uniform
         Investment
         [ InvestmentLongTerm
@@ -61,7 +62,7 @@ decisionTypeGenerator =
         ]
 
 
-decisionContentGenerator : DecisionType -> Generator ( String, List ResourceDelta )
+decisionContentGenerator : Type -> Generator ( String, List ResourceDelta )
 decisionContentGenerator type_ =
     ResourceDelta.bundleGenerator <|
         case type_ of
@@ -177,7 +178,7 @@ decisionContentGenerator type_ =
                       , subF 0.05 0.15 BREF
                       ]
                     )
-                    [ ( "Bezpečnostní opatření"
+                    [ ( "Najmi sekuriťaky na Bazaly"
                       , [ sub 20 40 AP
                         , subF 0.05 0.15 BREF
                         ]
@@ -212,3 +213,16 @@ keepUniqueNames decisions =
         |> List.map (\decision -> ( decision.flavorText, decision ))
         |> Dict.fromList
         |> Dict.values
+
+
+typeLabel : Type -> String
+typeLabel type_ =
+    case type_ of
+        Investment ->
+            "Investice"
+
+        InvestmentLongTerm ->
+            "Dlouhodobe investice"
+
+        Prevention ->
+            "Prevence"

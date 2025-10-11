@@ -8,6 +8,7 @@ import Html exposing (Html)
 import Html.Attributes
 import Html.Events
 import Juice exposing (Juice)
+import List.Extra
 import Random
 import Ranking exposing (Ranking)
 import Region exposing (Region)
@@ -274,8 +275,26 @@ viewNoDecisions =
 
 viewDecisions : Resources -> List Decision -> Html Msg
 viewDecisions yourResources decisions =
-    Html.table []
-        (decisions |> List.map (viewDecisionRow yourResources))
+    let
+        groups : List ( Decision.Type, List Decision )
+        groups =
+            decisions
+                |> List.Extra.gatherEqualsBy .type_
+                |> List.map (\( x, xs ) -> ( x.type_, x :: xs ))
+    in
+    UI.col []
+        (groups
+            |> List.map (viewDecisionsOfType yourResources)
+        )
+
+
+viewDecisionsOfType : Resources -> ( Decision.Type, List Decision ) -> Html Msg
+viewDecisionsOfType yourResources ( decisionType, decisions ) =
+    UI.col []
+        [ UI.heading (Decision.typeLabel decisionType)
+        , Html.table []
+            (decisions |> List.map (viewDecisionRow yourResources))
+        ]
 
 
 viewDecisionRow : Resources -> Decision -> Html Msg

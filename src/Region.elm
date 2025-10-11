@@ -17,6 +17,7 @@ import Random.Extra
 import Random.List
 import RandomEvent exposing (RandomEvent)
 import Resource exposing (Resources)
+import ResourceDelta
 import Upgrade exposing (Upgrade)
 
 
