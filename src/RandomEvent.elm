@@ -53,8 +53,8 @@ badGenerator =
 listGenerator : { resources | gref : Int, bref : Int } -> Generator (List RandomEvent)
 listGenerator { gref, bref } =
     Random.map2 (++)
-        (listGenerator_ (toFloat gref / 100) goodGenerator)
-        (listGenerator_ (toFloat bref / 100) badGenerator)
+        (listGenerator_ gref goodGenerator)
+        (listGenerator_ bref badGenerator)
 
 
 listGenerator_ : Int -> Generator RandomEvent -> Generator (List RandomEvent)
