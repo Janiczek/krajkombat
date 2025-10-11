@@ -1,8 +1,10 @@
 module Region exposing
     ( Region
     , advanceMonth
+    , applyDecision
     , applyRandomEvent
     , applyRandomEvents
+    , discardDecision
     , initGenerator
     , initListGenerator
     , youName
@@ -113,3 +115,31 @@ applyRandomEvent event region =
 applyRandomEvents : List RandomEvent -> Region -> Region
 applyRandomEvents events region =
     List.foldl applyRandomEvent region events
+
+
+applyDecision : Decision -> Region -> Region
+applyDecision decision region =
+    let
+        newResources : Resource.Resources
+        newResources =
+            region.resources
+                |> Resource.applyDeltas decision.deltas
+
+        newAvailableDecisions : List Decision
+        newAvailableDecisions =
+            region.availableDecisions
+                |> List.filter (\d -> d.flavorText /= decision.flavorText)
+    in
+    { region
+        | resources = newResources
+        , availableDecisions = newAvailableDecisions
+    }
+
+
+discardDecision : Decision -> Region -> Region
+discardDecision decision region =
+    { region
+        | availableDecisions =
+            region.availableDecisions
+                |> List.filter (\d -> d.flavorText /= decision.flavorText)
+    }

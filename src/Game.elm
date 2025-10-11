@@ -21,6 +21,7 @@ import Resource
 
 type Msg
     = MakeDecision Decision
+    | DiscardDecision Decision
     | ApplyNextRandomEvent
 
 
@@ -97,27 +98,8 @@ makeAIDecisions aiRegion =
                     aiRegion
 
                 else
-                    List.foldl applyDecision aiRegion selectedDecisions
+                    List.foldl Region.applyDecision aiRegion selectedDecisions
             )
-
-
-applyDecision : Decision -> Region -> Region
-applyDecision decision region =
-    let
-        newResources : Resource.Resources
-        newResources =
-            region.resources
-                |> Resource.applyDeltas decision.deltas
-
-        newAvailableDecisions : List Decision
-        newAvailableDecisions =
-            region.availableDecisions
-                |> List.filter (\d -> d.flavorText /= decision.flavorText)
-    in
-    { region
-        | resources = newResources
-        , availableDecisions = newAvailableDecisions
-    }
 
 
 advanceMonth : Game -> Generator Game
@@ -188,18 +170,21 @@ update msg game =
         MakeDecision decision ->
             makeDecision decision game
 
+        DiscardDecision decision ->
+            discardDecision decision game
+
         ApplyNextRandomEvent ->
             applyNextRandomEvent game
 
 
 makeDecision : Decision -> Game -> Game
 makeDecision decision ({ you } as game) =
-    let
-        updatedYou : Region
-        updatedYou =
-            applyDecision decision you
-    in
-    { game | you = updatedYou }
+    { game | you = you |> Region.applyDecision decision }
+
+
+discardDecision : Decision -> Game -> Game
+discardDecision decision ({ you } as game) =
+    { game | you = you |> Region.discardDecision decision }
 
 
 applyNextRandomEvent : Game -> Game

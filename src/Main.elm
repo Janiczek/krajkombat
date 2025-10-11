@@ -36,6 +36,7 @@ type Msg
       -- GameLoop
     | AdvanceMonth
     | MakeDecision Decision
+    | DiscardDecision Decision
       -- Random Events Modal
     | ApplyNextRandomEvent
       -- GameEnded
@@ -125,6 +126,10 @@ update msg model =
         MakeDecision decision ->
             model
                 |> updateGameLoop (Game.MakeDecision decision)
+
+        DiscardDecision decision ->
+            model
+                |> updateGameLoop (Game.DiscardDecision decision)
 
         ApplyNextRandomEvent ->
             model
@@ -241,7 +246,11 @@ viewGameLoop juice game =
         , UI.row []
             [ UI.section [ UI.cls "w-[60ch]" ]
                 [ UI.heading "Duležita rozhodnuti"
-                , viewDecisions game.you.resources game.you.availableDecisions
+                , if List.isEmpty game.you.availableDecisions then
+                    viewNoDecisions
+
+                  else
+                    viewDecisions game.you.resources game.you.availableDecisions
                 ]
             , UI.col [ UI.cls "w-[40ch]" ]
                 [ UI.section []
@@ -256,6 +265,11 @@ viewGameLoop juice game =
             ]
         ]
     ]
+
+
+viewNoDecisions : Html Msg
+viewNoDecisions =
+    Html.text "Už neni o čem!"
 
 
 viewDecisions : Resources -> List Decision -> Html Msg
@@ -286,12 +300,6 @@ viewDecisionRow yourResources decision =
 
             else
                 "text-gray-400"
-
-        deltaNodes : List (Html msg)
-        deltaNodes =
-            decision.deltas
-                |> List.map viewDelta
-                |> List.intersperse (Html.text ", ")
     in
     Html.tr
         [ UI.mod "hover"
@@ -305,8 +313,10 @@ viewDecisionRow yourResources decision =
         [ Html.td [ UI.cls "py-2" ]
             [ Html.div []
                 [ Html.div [] [ flavorTextNode ]
-                , Html.div [ UI.cls ("text-sm " ++ deltaClass) ]
-                    deltaNodes
+                , Html.ul [ UI.cls ("text-sm " ++ deltaClass) ]
+                    (decision.deltas
+                        |> List.map (\delta -> Html.li [] [ viewDelta { canApply = canApply } delta ])
+                    )
                 ]
             ]
         , Html.td [ UI.cls "pl-[2ch] text-right text-nowrap" ]
@@ -317,6 +327,16 @@ viewDecisionRow yourResources decision =
                 -- TODO tooltip saying what you're missing
                 ]
                 "To chcu"
+            , UI.btn
+                [ Html.Events.onClick (DiscardDecision decision)
+                , Html.Attributes.disabled (not canApply)
+                , UI.cls "bg-red-500"
+                , UI.mod "hover" "bg-red-400"
+                , UI.mod "active" "bg-red-500"
+
+                -- TODO tooltip saying what you're missing
+                ]
+                "Zapomeň"
             ]
         ]
 
@@ -422,7 +442,10 @@ viewRanking ranking =
                                             else
                                                 ""
                                     in
-                                    Html.tr [ rowCls ]
+                                    Html.tr
+                                        [ rowCls
+                                        , UI.mod "hover" "bg-blue-50"
+                                        ]
                                         [ Html.td [] [ Html.text ordinalText ]
                                         , Html.td [ UI.cls "pl-[2ch] text-xl" ] [ Html.text (medalForRank rank) ]
                                         , Html.td [ UI.cls "pl-[2ch]" ] [ Html.text name ]
@@ -445,28 +468,23 @@ viewYourStats region =
 viewResources : Resources -> Html msg
 viewResources stats =
     let
-        statRow : String -> String -> Html msg -> Html msg
-        statRow label description valueCell =
-            Html.tr []
-                [ Html.td [ UI.cls "py-1 pr-2 text-base" ]
-                    [ UI.col [ UI.cls "gap-y-0" ]
-                        [ Html.text label
-                        , Html.span [ UI.cls "text-xs text-gray-500" ] [ Html.text description ]
-                        ]
-                    ]
-                , Html.td [ UI.cls "text-right align-top text-base" ] [ valueCell ]
+        statRow : String -> String -> Html msg
+        statRow label value =
+            Html.tr [ UI.mod "hover" "bg-blue-50" ]
+                [ Html.td [ UI.cls "py-1 pr-2 text-base" ] [ Html.text label ]
+                , Html.td [ UI.cls "text-right align-top text-base" ] [ Html.text value ]
                 ]
     in
     UI.col []
         [ UI.heading "Kasa:"
         , Html.table [ UI.cls "min-w-[20ch] table-auto border-spacing-y-2" ]
             [ Html.tbody []
-                [ statRow "💰 Ch" "Chechtaky" (Html.text (String.fromInt stats.ap))
-                , statRow "💶 Ch/m" "Chechtaky/měsíc" (Html.text (String.fromInt stats.apPerMonth))
-                , statRow "📈 ŠD" "Šance na dobru nahodu" (Html.text (UI.float stats.gref))
-                , statRow "📉 ŠŠ" "Šance na špatnu nahodu" (Html.text (UI.float stats.bref))
-                , statRow "⚽ BBV" "BrankyBodyVteřiny" (Html.text (String.fromInt stats.bbv))
-                , statRow "🏒 BBV/m" "BrankyBodyVteřiny/měsíc" (Html.text (String.fromInt stats.bbvPerMonth))
+                [ statRow "💰 Chechtaky" (String.fromInt stats.ap)
+                , statRow "💶 Chechtaky/měsíc" (String.fromInt stats.apPerMonth)
+                , statRow "📈 Dobre nahody/měsíc" (UI.float stats.gref)
+                , statRow "📉 Špatne nahody/měsíc" (UI.float stats.bref)
+                , statRow "⚽ BrankyBodyVteřiny" (String.fromInt stats.bbv)
+                , statRow "🏒 BrankyBodyVteřiny/měsíc" (String.fromInt stats.bbvPerMonth)
                 ]
             ]
         ]
@@ -540,8 +558,8 @@ nature delta =
             f n
 
 
-viewDelta : ResourceDelta -> Html msg
-viewDelta delta =
+viewDelta : { canApply : Bool } -> ResourceDelta -> Html msg
+viewDelta { canApply } delta =
     let
         plusMinus : number -> String
         plusMinus n =
@@ -555,31 +573,35 @@ viewDelta delta =
         content =
             case delta of
                 AP n ->
-                    plusMinus n ++ String.fromInt (abs n) ++ " Ch"
+                    plusMinus n ++ String.fromInt (abs n) ++ " Chechtaky"
 
                 APPerMonth n ->
-                    plusMinus n ++ String.fromInt (abs n) ++ " Ch/m"
+                    plusMinus n ++ String.fromInt (abs n) ++ " Chechtaky/měsíc"
 
                 GREF n ->
-                    plusMinus n ++ UI.float (abs n) ++ " ŠD"
+                    plusMinus n ++ UI.float (abs n) ++ " Dobre nahody/měsíc"
 
                 BREF n ->
-                    plusMinus n ++ UI.float (abs n) ++ " ŠŠ"
+                    plusMinus n ++ UI.float (abs n) ++ " Špatne nahody/měsíc"
 
                 BBV n ->
-                    plusMinus n ++ String.fromInt (abs n) ++ " BBV"
+                    plusMinus n ++ String.fromInt (abs n) ++ " BrankyBodyVteřiny"
 
                 BBVPerMonth n ->
-                    plusMinus n ++ String.fromInt (abs n) ++ " BBV/m"
+                    plusMinus n ++ String.fromInt (abs n) ++ " BrankyBodyVteřiny/měsíc"
 
         colorClass : String
         colorClass =
-            case nature delta of
-                Good ->
-                    "text-green-700"
+            if canApply then
+                case nature delta of
+                    Good ->
+                        "text-green-700"
 
-                Bad ->
-                    "text-red-700"
+                    Bad ->
+                        "text-red-700"
+
+            else
+                "text-gray-400"
     in
     Html.span
         [ UI.cls colorClass ]
@@ -628,10 +650,9 @@ viewRandomEventsModal model =
                             , Html.div []
                                 [ Html.text currentEvent.flavorText ]
                             , if not (List.isEmpty currentEvent.deltas) then
-                                Html.div [ UI.cls "text-sm" ]
+                                Html.ul [ UI.cls "text-sm list-disc ml-6" ]
                                     (currentEvent.deltas
-                                        |> List.map viewDelta
-                                        |> List.intersperse (Html.text ", ")
+                                        |> List.map (\delta -> Html.li [] [ viewDelta { canApply = True } delta ])
                                     )
 
                               else

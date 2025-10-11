@@ -1,7 +1,7 @@
 module RandomEvent exposing (RandomEvent, listGenerator)
 
 import Random exposing (Generator)
-import ResourceDelta exposing (ResourceDelta(..))
+import ResourceDelta exposing (ResourceDelta(..), add, addF, sub, subF)
 
 
 type alias RandomEvent =
@@ -15,12 +15,13 @@ type alias RandomEvent =
 -}
 goodGenerator : Generator RandomEvent
 goodGenerator =
-    Random.uniform ( "Dotace vyšly hej", [ AP 200 ] )
-        [ ( "Naš tym je uplně rozdupal", [ AP 50, BBV 20 ] )
-        , ( "Hackeři z SPŠE se někam naburali", [ AP 150, BREF 0.01 ] )
-        , ( "Hackeři z SPŠE zjistili že databaze KrajKombatu ma defaultni heslo", [ BBV 50 ] )
-        , ( "Naše škola byla nejlepši v republice kamo", [ AP 50, APPerMonth 20, GREF 0.03 ] )
+    Random.uniform ( "Dotace vyšly hej", [ add 150 300 AP ] )
+        [ ( "Naš tym je uplně rozdupal", [ add 40 80 AP, add 15 30 BBV ] )
+        , ( "Hackeři z SPŠE se někam naburali", [ add 140 200 AP, addF 0.01 0.02 BREF ] )
+        , ( "Hackeři z SPŠE zjistili že databaze KrajKombatu ma defaultni heslo", [ add 40 60 BBV ] )
+        , ( "Naše škola byla nejlepši v republice kamo", [ add 40 80 AP, add 20 40 APPerMonth, addF 0.03 0.05 GREF ] )
         ]
+        |> ResourceDelta.bundleGenerator
         |> Random.map
             (\( flavorText, deltas ) ->
                 { flavorText = flavorText
@@ -34,11 +35,12 @@ goodGenerator =
 -}
 badGenerator : Generator RandomEvent
 badGenerator =
-    Random.uniform ( "Přišli nam na podvod", [ AP -50, BREF 0.03 ] )
-        [ ( "Na tom hřišti sme to moc nedali", [ BREF 0.05 ] )
-        , ( "Zas nějaky doping", [ AP -30, BBVPerMonth -2 ] )
-        , ( "Hackeři z SPŠE po sobě nezametli stopy kuva", [ AP -50 ] )
+    Random.uniform ( "Přišli nam na podvod", [ sub 40 70 AP, addF 0.02 0.05 BREF ] )
+        [ ( "Na tom hřišti sme to moc nedali", [ addF 0.05 0.1 BREF, subF 0.01 0.02 GREF ] )
+        , ( "Zas nějaky doping", [ sub 20 40 AP, sub 2 4 BBVPerMonth ] )
+        , ( "Hackeři z SPŠE po sobě nezametli stopy kuva", [ sub 30 60 AP ] )
         ]
+        |> ResourceDelta.bundleGenerator
         |> Random.map
             (\( flavorText, deltas ) ->
                 { flavorText = flavorText
