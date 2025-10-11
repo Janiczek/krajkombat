@@ -391,21 +391,15 @@ viewMainMenu =
             [ Html.text "Zadavatel: Game Devs Ostrava / Zpracovatel: "
             , UI.link "https://bsky.app/profile/janiczek.cz" "Martin Janiczek"
             ]
-        , Html.span
-            [ UI.cls "visible"
-            , UI.mod "peer-hover" "invisible"
+        , UI.col [ UI.cls "group items-center hover:cursor-help" ]
+            [ Html.span
+                [ UI.cls "group-hover:hidden" ]
+                [ UI.sprite UI.CharNormal ]
+            , Html.span
+                [ UI.cls "hidden group-hover:inline" ]
+                [ UI.sprite UI.CharConfused ]
+            , UI.btn [ Html.Events.onClick StartGame ] "Cože"
             ]
-            [ UI.sprite UI.CharNormal ]
-        , Html.span
-            [ UI.cls "invisible"
-            , UI.mod "peer-hover" "visible"
-            ]
-            [ UI.sprite UI.CharConfused ]
-        , UI.btn
-            [ Html.Events.onClick StartGame
-            , UI.cls "peer"
-            ]
-            "Cože"
         , Html.h2 [ UI.cls "text-sm pt-4 text-gray-600" ]
             [ Html.text "Grafika: "
             , UI.link "https://kenney.nl/assets/toon-characters-1" "Kenney.nl"

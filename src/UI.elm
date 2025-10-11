@@ -153,7 +153,7 @@ spriteSize s =
             ( 190, 205 )
 
         CharConfused ->
-            ( 142, 197 )
+            ( 156, 203 )
 
 
 sprite : Sprite -> Html msg
