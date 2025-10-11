@@ -1,4 +1,4 @@
-module Main exposing (Flags, Model, Msg, main)
+port module Main exposing (Flags, Model, Msg, main)
 
 import Browser
 import Browser.Dom
@@ -66,6 +66,9 @@ type Msg
     | AnimateLogo Float
       -- Screen dimensions
     | GotScreenSize Float Float
+
+
+port blur : () -> Cmd msg
 
 
 main : Program Flags Model Msg
@@ -161,7 +164,7 @@ update msg model =
                             else
                                 { newModel | gamePhase = Game.GameLoop newGame }
                     in
-                    ( finalModel, Cmd.none )
+                    ( finalModel, blur () )
 
         BackToMainMenu ->
             ( { model | gamePhase = Game.MainMenu }
@@ -325,17 +328,43 @@ view : Model -> Browser.Document Msg
 view model =
     { title = title
     , body =
-        [ viewBouncingLogo model
-        , Html.div
-            [ UI.cls "font-mono p-2 pt-8 flex justify-center" ]
-            ([ viewGamePhase model
-             , viewRandomEventsModal model
-             , viewBlackHatOperationModal model
-             ]
-                |> List.concat
-            )
+        [ Html.div
+            [ UI.cls "absolute inset-0 w-full h-full"
+            , if anyModalInProgress model then
+                UI.cls "overflow-hidden"
+
+              else
+                UI.cls ""
+            ]
+            [ viewBouncingLogo model
+            , Html.div [ UI.cls "font-mono p-2 pt-8 flex justify-center" ]
+                ([ viewGamePhase model
+                 , viewRandomEventsModal model
+                 , viewBlackHatOperationModal model
+                 ]
+                    |> List.concat
+                )
+            ]
         ]
     }
+
+
+anyModalInProgress : Model -> Bool
+anyModalInProgress model =
+    List.any identity
+        [ randomEventModalInProgress model
+        , model.blackHatOperationInProgress
+        ]
+
+
+randomEventModalInProgress : Model -> Bool
+randomEventModalInProgress model =
+    case model.gamePhase of
+        Game.GameLoop game ->
+            not <| List.isEmpty game.you.randomEvents
+
+        _ ->
+            False
 
 
 viewBouncingLogo : Model -> Html Msg
@@ -608,22 +637,23 @@ viewGameEnded : Juice -> Game.Results -> List (Html Msg)
 viewGameEnded juice results =
     case results of
         Game.YouWon data ->
-            viewGameEnded_ juice.youWonMessage juice data
+            viewGameEnded_ juice.youWonMessage UI.CharWin juice data
 
         Game.YouLost data ->
-            viewGameEnded_ juice.youLostMessage juice data
+            viewGameEnded_ juice.youLostMessage UI.CharLose juice data
 
         Game.YouLostByDraw data ->
-            viewGameEnded_ juice.youLostByDrawMessage juice data
+            viewGameEnded_ juice.youLostByDrawMessage UI.CharDraw juice data
 
         Game.Bug ->
             [ Html.h2 [] [ Html.text "Ups, se to rozbilo" ] ]
 
 
-viewGameEnded_ : String -> Juice -> Game.ResultsData -> List (Html Msg)
-viewGameEnded_ message juice resultsData =
+viewGameEnded_ : String -> UI.Sprite -> Juice -> Game.ResultsData -> List (Html Msg)
+viewGameEnded_ message sprite juice resultsData =
     [ UI.col []
         [ Html.h2 [] [ Html.text message ]
+        , UI.sprite sprite
         , viewRanking resultsData.ranking
         , UI.btn [ Html.Events.onClick StartGame ] juice.tryAgainMessage
         , UI.btn [ Html.Events.onClick BackToMainMenu ] "Do menu"

@@ -6,3 +6,9 @@ const app = Elm.Main.init({
             : Math.floor(Math.random() * 4294967296)
     }
 });
+
+app.ports.blur.subscribe(() => {
+    if (document.activeElement && typeof document.activeElement.blur === "function") {
+        document.activeElement.blur();
+    }
+});

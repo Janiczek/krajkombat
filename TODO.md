@@ -1,10 +1,13 @@
 # TODOs
 
-- [ ] main menu
+- [x] main menu
 
-- [ ] story
+- [x] story
 
-- [ ] visuals: you in your office (Kenney?)
+- [x] visuals: you in your office (Kenney?)
+- [x] game over visuals
+- [x] game win visuals
+- [x] game draw visuals
 
 - [x] game loop of monthly decision making time
 - [ ] game loop: showing new urgencies after some decisions
