@@ -1,11 +1,7 @@
 module Decision exposing
     ( Decision
     , DecisionType(..)
-    , decisionContentGenerator
-    , decisionTypeGenerator
-    , keepUniqueNames
     , listGenerator
-    , maxDecisionsPerMonth
     )
 
 import Dict
@@ -154,6 +150,13 @@ decisionContentGenerator type_ =
                     , addF 0.25 0.35 GREF
                     ]
                   )
+                , ( "Koučovani tělocvikařu"
+                  , [ sub 30 40 AP
+                    , sub 5 10 APPerMonth
+                    , add 8 10 BBV
+                    , add 3 5 BBVPerMonth
+                    ]
+                  )
                 , ( "Zelena transformace bo GrinDyl"
                   , [ sub 30 50 AP
                     , add 20 30 APPerMonth
@@ -213,7 +216,13 @@ decisionContentGenerator type_ =
         |> Random.andThen
             (\( flavorText, deltas ) ->
                 Random.Extra.sequence deltas
-                    |> Random.map (\deltas_ -> ( flavorText, deltas_ ))
+                    |> Random.map
+                        (\deltas_ ->
+                            ( flavorText
+                            , deltas_
+                                |> List.filter (\delta -> ResourceDelta.floatValue delta /= 0)
+                            )
+                        )
             )
 
 

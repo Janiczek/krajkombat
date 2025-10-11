@@ -260,14 +260,17 @@ viewDecisions decisions =
 viewDecisionRow : Decision -> Html Msg
 viewDecisionRow decision =
     Html.tr []
-        [ Html.td [] [ Html.text decision.flavorText ]
-        , Html.td [ UI.cls "pl-[2ch]" ]
-            [ decision.deltas
-                |> List.map viewDelta
-                |> String.join ", "
-                |> Html.text
+        [ Html.td []
+            [ Html.div []
+                [ Html.div [] [ Html.text decision.flavorText ]
+                , Html.div [ UI.cls "text-sm" ]
+                    (decision.deltas
+                        |> List.map viewDelta
+                        |> List.intersperse (Html.text ", ")
+                    )
+                ]
             ]
-        , Html.td [ UI.cls "pl-[2ch] text-right" ]
+        , Html.td [ UI.cls "pl-[2ch] text-right text-nowrap" ]
             [ UI.btn
                 [ Html.Events.onClick (MakeDecision decision) ]
                 "To chcu"
@@ -451,7 +454,53 @@ viewUpgrades upgrades =
             ]
 
 
-viewDelta : ResourceDelta -> String
+type Nature
+    = Good
+    | Bad
+
+
+flipNature : Nature -> Nature
+flipNature n =
+    case n of
+        Good ->
+            Bad
+
+        Bad ->
+            Good
+
+
+nature : ResourceDelta -> Nature
+nature delta =
+    let
+        f : number -> Nature
+        f n =
+            if n >= 0 then
+                Good
+
+            else
+                Bad
+    in
+    case delta of
+        AP n ->
+            f n
+
+        APPerMonth n ->
+            f n
+
+        GREF n ->
+            f n
+
+        BREF n ->
+            f n |> flipNature
+
+        BBV n ->
+            f n
+
+        BBVPerMonth n ->
+            f n
+
+
+viewDelta : ResourceDelta -> Html msg
 viewDelta delta =
     let
         plusMinus : number -> String
@@ -461,22 +510,37 @@ viewDelta delta =
 
             else
                 "-"
+
+        content : String
+        content =
+            case delta of
+                AP n ->
+                    plusMinus n ++ String.fromInt (abs n) ++ " AP"
+
+                APPerMonth n ->
+                    plusMinus n ++ String.fromInt (abs n) ++ " AP/m"
+
+                GREF n ->
+                    plusMinus n ++ UI.float (abs n) ++ " GREF"
+
+                BREF n ->
+                    plusMinus n ++ UI.float (abs n) ++ " BREF"
+
+                BBV n ->
+                    plusMinus n ++ String.fromInt (abs n) ++ " BBV"
+
+                BBVPerMonth n ->
+                    plusMinus n ++ String.fromInt (abs n) ++ " BBV/m"
+
+        colorClass : String
+        colorClass =
+            case nature delta of
+                Good ->
+                    "text-green-700"
+
+                Bad ->
+                    "text-red-700"
     in
-    case delta of
-        AP n ->
-            plusMinus n ++ String.fromInt (abs n) ++ " AP"
-
-        APPerMonth n ->
-            plusMinus n ++ String.fromInt (abs n) ++ " AP/m"
-
-        GREF n ->
-            plusMinus n ++ UI.float (abs n) ++ " GREF"
-
-        BREF n ->
-            plusMinus n ++ UI.float (abs n) ++ " BREF"
-
-        BBV n ->
-            plusMinus n ++ String.fromInt (abs n) ++ " BBV"
-
-        BBVPerMonth n ->
-            plusMinus n ++ String.fromInt (abs n) ++ " BBV/m"
+    Html.span
+        [ UI.cls colorClass ]
+        [ Html.text content ]
