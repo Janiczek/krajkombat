@@ -412,26 +412,24 @@ viewGameEnded : Juice -> Game.Results -> List (Html Msg)
 viewGameEnded juice results =
     case results of
         Game.YouWon data ->
-            viewGameEnded_ juice.youWonMessage data
+            viewGameEnded_ juice.youWonMessage juice data
 
         Game.YouLost data ->
-            viewGameEnded_ juice.youLostMessage data
+            viewGameEnded_ juice.youLostMessage juice data
 
         Game.YouLostByDraw data ->
-            viewGameEnded_ juice.youLostByDrawMessage data
+            viewGameEnded_ juice.youLostByDrawMessage juice data
 
         Game.Bug ->
             [ Html.h2 [] [ Html.text "Ups, se to rozbilo" ] ]
 
 
-viewGameEnded_ : String -> Game.ResultsData -> List (Html Msg)
-viewGameEnded_ message resultsData =
+viewGameEnded_ : String -> Juice -> Game.ResultsData -> List (Html Msg)
+viewGameEnded_ message juice resultsData =
     [ UI.col []
         [ Html.h2 [] [ Html.text message ]
         , viewRanking resultsData.ranking
-        , UI.btn [ Html.Events.onClick StartGame ]
-            -- Valim to zkusit znovu
-            "Hrat znovu"
+        , UI.btn [ Html.Events.onClick StartGame ] juice.tryAgainMessage
         , UI.btn [ Html.Events.onClick BackToMainMenu ] "Do menu"
         ]
     ]

@@ -10,6 +10,7 @@ type alias Juice =
     , youWonMessage : String
     , youLostMessage : String
     , youLostByDrawMessage : String
+    , tryAgainMessage : String
     }
 
 
@@ -21,12 +22,13 @@ uniform ( x, xs ) =
 generator : Generator Juice
 generator =
     Random.constant
-        (\finishIntroButtonText advanceMonthButtonText youWonMessage youLostMessage youLostByDrawMessage ->
+        (\finishIntroButtonText advanceMonthButtonText youWonMessage youLostMessage youLostByDrawMessage tryAgainMessage ->
             { finishIntroButtonText = finishIntroButtonText
             , advanceMonthButtonText = advanceMonthButtonText
             , youWonMessage = youWonMessage
             , youLostMessage = youLostMessage
             , youLostByDrawMessage = youLostByDrawMessage
+            , tryAgainMessage = tryAgainMessage
             }
         )
         |> Random.Extra.andMap (uniform finishIntroButtonTexts)
@@ -34,6 +36,7 @@ generator =
         |> Random.Extra.andMap (uniform youWonMessageTexts)
         |> Random.Extra.andMap (uniform youLostMessageTexts)
         |> Random.Extra.andMap (uniform youLostByDrawMessageTexts)
+        |> Random.Extra.andMap (uniform tryAgainMessageTexts)
 
 
 finishIntroButtonTexts : ( String, List String )
@@ -82,5 +85,13 @@ youLostByDrawMessageTexts =
     ( "Jak se musiš dělit tak chuj s tym! Přiště lepi!"
     , [ "Prohrals kamo bo plichta je nanic!"
       , "Ale lepši by bylo aby oni byli druzi, nu ni?"
+      ]
+    )
+
+
+tryAgainMessageTexts : ( String, List String )
+tryAgainMessageTexts =
+    ( "Valim to zkusit znovu"
+    , [ "Hrat znovu"
       ]
     )
