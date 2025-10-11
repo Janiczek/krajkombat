@@ -26,7 +26,7 @@ import Upgrade exposing (Upgrade(..))
 type alias Region =
     { name : String
     , resources : Resources
-    , blackHatUpgrade : Maybe { monthsUntilAvailable : Int }
+    , blackHatUpgrade : Maybe Upgrade.BlackHatData
     , upgradesAvailable : List Upgrade
     , availableDecisions : List Decision
     , randomEvents : List RandomEvent
@@ -116,10 +116,7 @@ advanceMonth ({ resources } as region) =
                 , randomEvents = randomEvents
                 , blackHatUpgrade =
                     region.blackHatUpgrade
-                        |> Maybe.map
-                            (\{ monthsUntilAvailable } ->
-                                { monthsUntilAvailable = max 0 (monthsUntilAvailable - 1) }
-                            )
+                        |> Maybe.map Upgrade.advanceBlackHat
                 , upgradesAvailable =
                     region.upgradesAvailable ++ addedUpgrades
             }
@@ -210,4 +207,4 @@ initializeUpgrade : Upgrade -> Region -> Region
 initializeUpgrade upgrade region =
     case upgrade of
         BlackHatBootcamp ->
-            { region | blackHatUpgrade = Just { monthsUntilAvailable = 3 } }
+            { region | blackHatUpgrade = Just Upgrade.initBlackHat }

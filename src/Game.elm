@@ -215,7 +215,11 @@ applyBlackHatOperation { regionName } ({ you, others } as game) =
                     other.resources
             in
             { game
-                | you = { you | resources = { yourResources | bbv = yourNewBbv } }
+                | you =
+                    { you
+                        | resources = { yourResources | bbv = yourNewBbv }
+                        , blackHatUpgrade = Just Upgrade.initBlackHat
+                    }
                 , others =
                     others
                         |> List.map

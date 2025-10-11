@@ -148,7 +148,7 @@ update msg model =
             )
 
         SelectBlackHatTarget regionName ->
-            model
+            { model | blackHatOperationInProgress = False }
                 |> updateGameLoop (Game.ApplyBlackHatOperation regionName)
 
         BuyUpgrade upgrade ->

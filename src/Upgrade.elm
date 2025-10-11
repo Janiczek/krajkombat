@@ -1,4 +1,14 @@
-module Upgrade exposing (Upgrade(..), chance, cost, description, name, procButtonLabel)
+module Upgrade exposing
+    ( BlackHatData
+    , Upgrade(..)
+    , advanceBlackHat
+    , chance
+    , cost
+    , description
+    , initBlackHat
+    , name
+    , procButtonLabel
+    )
 
 import ResourceDelta exposing (ResourceDelta(..))
 
@@ -46,3 +56,17 @@ chance upgrade =
     case upgrade of
         BlackHatBootcamp ->
             0.4
+
+
+type alias BlackHatData =
+    { monthsUntilAvailable : Int }
+
+
+initBlackHat : BlackHatData
+initBlackHat =
+    { monthsUntilAvailable = 3 }
+
+
+advanceBlackHat : BlackHatData -> BlackHatData
+advanceBlackHat data =
+    { data | monthsUntilAvailable = max 0 (data.monthsUntilAvailable - 1) }
