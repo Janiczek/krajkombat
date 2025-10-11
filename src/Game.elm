@@ -10,6 +10,7 @@ module Game exposing
     , update
     )
 
+import Constants
 import Decision exposing (Decision)
 import List.Extra
 import Random exposing (Generator)
@@ -57,22 +58,17 @@ type alias Game =
     }
 
 
-otherRegionsCount : Int
-otherRegionsCount =
-    3
-
-
 gameInitGenerator : Generator Game
 gameInitGenerator =
     Random.constant
         (\you others ->
             { you = you
             , others = others
-            , monthsLeft = 12
+            , monthsLeft = Constants.initMonthsLeft
             }
         )
         |> Random.Extra.andMap (Region.initGenerator Region.youName)
-        |> Random.Extra.andMap (Region.initListGenerator otherRegionsCount)
+        |> Random.Extra.andMap (Region.initListGenerator Constants.otherRegionsCount)
 
 
 makeAIDecisions : Region -> Generator Region

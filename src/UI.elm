@@ -3,6 +3,7 @@ module UI exposing
     , btn
     , cls
     , col
+    , cssVars
     , float
     , heading
     , link
@@ -108,6 +109,7 @@ type Sprite
     | CharDraw
     | CharLose
     | CharExplain
+    | CharConfused
 
 
 spriteUrl : Sprite -> String
@@ -128,6 +130,9 @@ spriteUrl s =
         CharExplain ->
             "char_explain.png"
 
+        CharConfused ->
+            "char_confused.png"
+
 
 spriteSize : Sprite -> ( Int, Int )
 spriteSize s =
@@ -147,6 +152,9 @@ spriteSize s =
         CharExplain ->
             ( 190, 205 )
 
+        CharConfused ->
+            ( 142, 197 )
+
 
 sprite : Sprite -> Html msg
 sprite s =
@@ -160,3 +168,11 @@ sprite s =
         , Html.Attributes.src (spriteUrl s)
         ]
         []
+
+
+cssVars : List ( String, String ) -> Html.Attribute msg
+cssVars vars =
+    vars
+        |> List.map (\( name, value ) -> "--" ++ name ++ ": " ++ value)
+        |> String.join ";"
+        |> Html.Attributes.attribute "style"

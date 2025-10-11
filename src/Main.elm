@@ -1,6 +1,9 @@
 module Main exposing (Flags, Model, Msg, main)
 
 import Browser
+import Browser.Dom
+import Browser.Events
+import Constants
 import Decision exposing (Decision)
 import Game exposing (Game)
 import Html exposing (Html)
@@ -17,6 +20,7 @@ import Ranking exposing (Ranking)
 import Region exposing (Region)
 import Resource exposing (Resources)
 import ResourceDelta exposing (ResourceDelta(..))
+import Task
 import UI
 import Upgrade exposing (Upgrade(..))
 
@@ -31,6 +35,12 @@ type alias Model =
     , randomSeed : Random.Seed
     , blackHatOperationInProgress : Bool
     , hasMusic : Bool
+    , logoX : Float
+    , logoY : Float
+    , logoVelocityX : Float
+    , logoVelocityY : Float
+    , screenWidth : Float
+    , screenHeight : Float
     }
 
 
@@ -52,6 +62,10 @@ type Msg
     | BackToMainMenu
       -- Other
     | ToggleMusic
+      -- Animation
+    | AnimateLogo Float
+      -- Screen dimensions
+    | GotScreenSize Float Float
 
 
 main : Program Flags Model Msg
@@ -60,7 +74,7 @@ main =
         { init = init
         , view = view
         , update = update
-        , subscriptions = \_ -> Sub.none
+        , subscriptions = subscriptions
         }
 
 
@@ -79,9 +93,24 @@ init flags =
       , randomSeed = newSeed
       , blackHatOperationInProgress = False
       , hasMusic = False
+      , logoX = 97
+      , logoY = 113
+      , logoVelocityX = 5
+      , logoVelocityY = 7
+      , screenWidth = 0
+      , screenHeight = 0
       }
-    , Cmd.none
+    , Browser.Dom.getViewport
+        |> Task.perform (\viewport -> GotScreenSize viewport.scene.width viewport.scene.height)
     )
+
+
+subscriptions : Model -> Sub Msg
+subscriptions _ =
+    Sub.batch
+        [ Browser.Events.onAnimationFrameDelta AnimateLogo
+        , Browser.Events.onResize (\width height -> GotScreenSize (toFloat width) (toFloat height))
+        ]
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -169,6 +198,86 @@ update msg model =
             , Cmd.none
             )
 
+        GotScreenSize width height ->
+            ( { model
+                | screenWidth = width
+                , screenHeight = height
+              }
+            , Cmd.none
+            )
+
+        AnimateLogo deltaTime ->
+            let
+                monthsElapsed : Float
+                monthsElapsed =
+                    case model.gamePhase of
+                        Game.GameLoop game ->
+                            toFloat (Constants.initMonthsLeft - game.monthsLeft)
+
+                        _ ->
+                            0
+
+                speedConstant : Float
+                speedConstant =
+                    0.04
+
+                speedConstantX : Float
+                speedConstantX =
+                    speedConstant + (1.021 ^ monthsElapsed - 1)
+
+                speedConstantY : Float
+                speedConstantY =
+                    speedConstant + (1.004 ^ monthsElapsed - 1)
+
+                newX : Float
+                newX =
+                    model.logoX + model.logoVelocityX * deltaTime * speedConstantX
+
+                newY : Float
+                newY =
+                    model.logoY + model.logoVelocityY * deltaTime * speedConstantY
+
+                newVelocityX : Float
+                newVelocityX =
+                    if newX <= 0 || newX >= model.screenWidth - toFloat Logo.width then
+                        -model.logoVelocityX
+
+                    else
+                        model.logoVelocityX
+
+                newVelocityY : Float
+                newVelocityY =
+                    if newY <= 0 || newY >= model.screenHeight - toFloat Logo.height then
+                        -model.logoVelocityY
+
+                    else
+                        model.logoVelocityY
+
+                finalX : Float
+                finalX =
+                    if newX <= 0 || newX >= model.screenWidth - toFloat Logo.width then
+                        model.logoX
+
+                    else
+                        newX
+
+                finalY : Float
+                finalY =
+                    if newY <= 0 || newY >= model.screenHeight - toFloat Logo.height then
+                        model.logoY
+
+                    else
+                        newY
+            in
+            ( { model
+                | logoX = finalX
+                , logoY = finalY
+                , logoVelocityX = newVelocityX
+                , logoVelocityY = newVelocityY
+              }
+            , Cmd.none
+            )
+
 
 advanceJuice : Model -> Model
 advanceJuice model =
@@ -216,7 +325,7 @@ view : Model -> Browser.Document Msg
 view model =
     { title = title
     , body =
-        [ viewBouncingLogo
+        [ viewBouncingLogo model
         , Html.div
             [ UI.cls "font-mono p-2 pt-8 flex justify-center" ]
             ([ viewGamePhase model
@@ -229,9 +338,24 @@ view model =
     }
 
 
-viewBouncingLogo : Html Msg
-viewBouncingLogo =
-    Logo.logoMsk
+viewBouncingLogo : Model -> Html Msg
+viewBouncingLogo model =
+    Html.div
+        [ UI.cssVars
+            [ ( "logo-x", String.fromFloat model.logoX ++ "px" )
+            , ( "logo-y", String.fromFloat model.logoY ++ "px" )
+            ]
+        ]
+        [ Html.div
+            [ Html.Attributes.style "position" "fixed"
+            , Html.Attributes.style "left" "var(--logo-x)"
+            , Html.Attributes.style "top" "var(--logo-y)"
+            , Html.Attributes.style "z-index" "-1"
+            , Html.Attributes.style "pointer-events" "none"
+            , Html.Attributes.style "opacity" "0.3"
+            ]
+            [ Logo.logoMsk ]
+        ]
 
 
 viewGamePhase : Model -> List (Html Msg)
@@ -267,8 +391,21 @@ viewMainMenu =
             [ Html.text "Zadavatel: Game Devs Ostrava / Zpracovatel: "
             , UI.link "https://bsky.app/profile/janiczek.cz" "Martin Janiczek"
             ]
-        , UI.sprite UI.CharNormal
-        , UI.btn [ Html.Events.onClick StartGame ] "Cože"
+        , Html.span
+            [ UI.cls "visible"
+            , UI.mod "peer-hover" "invisible"
+            ]
+            [ UI.sprite UI.CharNormal ]
+        , Html.span
+            [ UI.cls "invisible"
+            , UI.mod "peer-hover" "visible"
+            ]
+            [ UI.sprite UI.CharConfused ]
+        , UI.btn
+            [ Html.Events.onClick StartGame
+            , UI.cls "peer"
+            ]
+            "Cože"
         , Html.h2 [ UI.cls "text-sm pt-4 text-gray-600" ]
             [ Html.text "Grafika: "
             , UI.link "https://kenney.nl/assets/toon-characters-1" "Kenney.nl"
@@ -910,10 +1047,10 @@ viewAudioMuteButton hasMusic =
         ]
         [ Html.text
             (if hasMusic then
-                "🔇"
+                "🔊"
 
              else
-                "🔊"
+                "🔇"
             )
         , if hasMusic then
             Html.audio

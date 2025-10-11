@@ -1,4 +1,4 @@
-module Logo exposing (logoMsk)
+module Logo exposing (height, logoMsk, width)
 
 import Html.Attributes
 import Svg exposing (Svg)
@@ -8,14 +8,14 @@ import Svg.Attributes
 logoMsk : Svg msg
 logoMsk =
     Svg.svg
-        [ Svg.Attributes.width "74"
-        , Svg.Attributes.height "67"
-        , Svg.Attributes.viewBox "0 0 74 67"
+        [ Svg.Attributes.width (String.fromInt width)
+        , Svg.Attributes.height (String.fromInt height)
+        , Svg.Attributes.viewBox ("0 0 " ++ String.fromInt width ++ " " ++ String.fromInt height)
         , Svg.Attributes.fill "none"
         , Html.Attributes.attribute "xmlns" "http://www.w3.org/2000/svg"
         ]
         [ Svg.g
-            [ Svg.Attributes.opacity "0.1"
+            [ Svg.Attributes.opacity "0.3"
             , Svg.Attributes.clipPath "url(#clip0_3_4)"
             ]
             [ Svg.path
@@ -30,3 +30,13 @@ logoMsk =
                 []
             ]
         ]
+
+
+width : Int
+width =
+    74
+
+
+height : Int
+height =
+    67
