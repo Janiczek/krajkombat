@@ -5,6 +5,7 @@ module Decision exposing
     , typeLabel
     )
 
+import Constants
 import Dict
 import Random exposing (Generator)
 import Random.Extra
@@ -26,14 +27,9 @@ type alias Decision =
     }
 
 
-maxDecisionsPerMonth : Int
-maxDecisionsPerMonth =
-    6
-
-
 listGenerator : Resources -> Generator (List Decision)
 listGenerator resources =
-    Random.list maxDecisionsPerMonth decisionGenerator
+    Random.list Constants.maxDecisionsPerMonth decisionGenerator
         |> Random.map keepUniqueNames
         |> Random.map (List.filter (\decision -> Resource.canApplyDeltas resources decision.deltas))
 

@@ -1,5 +1,6 @@
 module Constants exposing
     ( initMonthsLeft
+    , maxDecisionsPerMonth
     , otherRegionsCount
     )
 
@@ -12,3 +13,8 @@ otherRegionsCount =
 initMonthsLeft : Int
 initMonthsLeft =
     12
+
+
+maxDecisionsPerMonth : Int
+maxDecisionsPerMonth =
+    6
