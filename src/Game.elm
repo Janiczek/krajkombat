@@ -78,7 +78,7 @@ type ResourceDelta
 
 decisionsGenerator : Generator (List Decision)
 decisionsGenerator =
-    Random.list availableDecisionsPerMonth decisionGenerator
+    Random.list maxDecisionsPerMonth decisionGenerator
         |> Random.map keepUniqueNames
 
 
@@ -208,8 +208,8 @@ keepUniqueNames decisions =
         |> Dict.values
 
 
-availableDecisionsPerMonth : Int
-availableDecisionsPerMonth =
+maxDecisionsPerMonth : Int
+maxDecisionsPerMonth =
     10
 
 
