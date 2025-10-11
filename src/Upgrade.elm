@@ -55,7 +55,7 @@ cost : Upgrade -> List ResourceDelta
 cost upgrade =
     case upgrade of
         BlackHatBootcamp ->
-            [ AP -150, APPerMonth -5 ]
+            [ AP -400, APPerMonth -20 ]
 
         DataAnalytics ->
             [ APPerMonth -10 ]

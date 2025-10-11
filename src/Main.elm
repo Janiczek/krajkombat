@@ -23,7 +23,6 @@ import ResourceDelta exposing (ResourceDelta(..))
 import Task
 import UI
 import Upgrade exposing (Upgrade(..))
-import VegaLite
 
 
 type alias Flags =
@@ -550,13 +549,17 @@ viewGameLoop juice game =
 
               else
                 viewDecisions game.you.resources game.you.availableDecisions
-            , UI.col [ UI.cls "w-[40ch]" ]
+            , UI.col [ UI.cls "w-[30ch]" ]
                 [ viewResources game.you.resources
                 , viewUpgrades game.you
                 ]
             , UI.col [ UI.cls "w-[40ch]" ]
                 [ if game.you.dataAnalyticsUpgrade then
-                    Html.Lazy.lazy BBVChart.view game.bbvHistory
+                    Html.Lazy.lazy4 BBVChart.view
+                        game.you.resources.bbvPerMonth
+                        game.you.resources.bbv
+                        game.monthsLeft
+                        game.bbvHistory
 
                   else
                     UI.none
@@ -597,7 +600,7 @@ viewDecisions yourResources decisions =
 viewDecisionsOfType : Resources -> ( Decision.Type, List Decision ) -> Html Msg
 viewDecisionsOfType yourResources ( decisionType, decisions ) =
     UI.section []
-        [ UI.heading (Decision.typeLabel decisionType)
+        [ Html.span [] [ UI.heading (Decision.typeLabel decisionType) ]
         , Html.table []
             (decisions |> List.map (viewDecisionRow yourResources))
         ]
@@ -629,7 +632,7 @@ viewDecisionRow yourResources decision =
         ]
         [ Html.td [ UI.cls "py-2" ]
             [ Html.div []
-                [ Html.div [] [ flavorTextNode ]
+                [ Html.div [ UI.cls "text-sm" ] [ flavorTextNode ]
                 , viewDeltas yourResources decision.deltas
                 ]
             ]
@@ -665,7 +668,7 @@ viewMonthStats advanceMonthButtonText monthsLeft =
             else
                 advanceMonthButtonText ++ " →"
     in
-    UI.row []
+    UI.row [ UI.cls "gap-4" ]
         -- TODO: as there are fewer and fewer months left, add text effects, change colors, add sweating, shaking (on hover?)
         -- TODO: random funny button text
         [ Html.text ("Zbývá měsíců: " ++ String.fromInt monthsLeft)
@@ -814,9 +817,10 @@ viewResources stats =
     let
         statRow : String -> String -> Html msg
         statRow label value =
-            Html.tr [ UI.mod "hover" "bg-blue-100" ]
-                [ Html.td [ UI.cls "py-1 pr-2 text-base" ] [ Html.text label ]
-                , Html.td [ UI.cls "text-right align-top text-base" ] [ Html.text value ]
+            Html.tr
+                [ UI.mod "hover" "bg-blue-100" ]
+                [ Html.td [ UI.cls "py-1 pr-2 text-sm align-middle" ] [ Html.text label ]
+                , Html.td [ UI.cls "text-right text-sm align-middle" ] [ Html.text value ]
                 ]
     in
     UI.section []
