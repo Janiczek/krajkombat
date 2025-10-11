@@ -7,11 +7,12 @@
     <title>KrajKombat: MSK Edition</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Covered+By+Your+Grace&display=swap"
-        rel="stylesheet">
+    <link rel="preload" as="style"
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Covered+By+Your+Grace&display=swap">
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Covered+By+Your+Grace&display=swap">
 
     <style type="text/tailwindcss">
         @theme {
@@ -45,6 +46,8 @@
 </head>
 
 <body>
+    <div style="transform: translateY(-100vh); font-family: 'JetBrains Mono';">ěščřžýáíéůúťďťľň</div>
+    <div style="transform: translateY(-100vh); font-family: 'Covered By Your Grace';">ěščřžýáíéůúťďťľň</div>
     <div id="app"></div>
     <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
     <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>

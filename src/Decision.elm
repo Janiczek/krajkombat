@@ -202,12 +202,13 @@ decisionContentGenerator type_ =
                     ( "Osobně převezmi zasilku COVID masek"
                     , [ sub 40 60 AP
                       , add 5 10 GREF
-                      , sub 2 4 BREF
+                      , add 2 4 BREF
                       ]
                     )
-                    [ ( "Vyřeš hadku na staveništi na Frýdecke"
+                    [ ( "\"Vyřeš\" hadku na staveništi na Frýdecke"
                       , [ sub 30 50 AP
-                        , sub 1 3 BREF
+                        , add 2 5 APPerMonth
+                        , add 1 3 BREF
                         ]
                       )
                     ]

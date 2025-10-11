@@ -250,11 +250,11 @@ update msg model =
 
                 speedConstantX : Float
                 speedConstantX =
-                    speedConstant + (1.021 ^ monthsElapsed - 1)
+                    speedConstant + (1.025 ^ monthsElapsed - 1)
 
                 speedConstantY : Float
                 speedConstantY =
-                    speedConstant + (1.004 ^ monthsElapsed - 1)
+                    speedConstant + (1.005 ^ monthsElapsed - 1)
 
                 newX : Float
                 newX =
@@ -444,10 +444,6 @@ viewMainMenu : List (Html Msg)
 viewMainMenu =
     [ UI.col [ UI.cls "items-center" ]
         [ Html.h1 [ UI.cls "font-bold text-2xl" ] [ Html.text title ]
-        , Html.h2 [ UI.cls "text-sm" ]
-            [ Html.text "Zadavatel: Game Devs Ostrava / Zpracovatel: "
-            , UI.link "https://bsky.app/profile/janiczek.cz" "Martin Janiczek"
-            ]
         , UI.col [ UI.cls "group items-center hover:cursor-help" ]
             [ Html.span
                 [ UI.cls "group-hover:hidden" ]
@@ -458,6 +454,10 @@ viewMainMenu =
             , UI.btn [ Html.Events.onClick StartGame ] "Cože"
             ]
         , Html.h2 [ UI.cls "text-sm pt-4 text-gray-600" ]
+            [ Html.text "Zadavatel: Game Devs Ostrava / Zpracovatel: "
+            , UI.link "https://bsky.app/profile/janiczek.cz" "Martin Janiczek"
+            ]
+        , Html.h2 [ UI.cls "text-sm text-gray-600" ]
             [ Html.text "Grafika: "
             , UI.link "https://kenney.nl/assets/toon-characters-1" "Kenney.nl"
             ]
@@ -1118,8 +1118,8 @@ viewBlackHatOperationModal model =
                                             |> List.map
                                                 (\rank ->
                                                     Html.tr [ UI.mod "hover" "bg-blue-100" ]
-                                                        [ Html.td [] [ Html.text rank.name ]
-                                                        , Html.td [ UI.cls "text-right pr-2" ] [ Html.text (String.fromInt rank.bbv) ]
+                                                        [ Html.td [ UI.cls "pr-[2ch]" ] [ Html.text rank.name ]
+                                                        , Html.td [ UI.cls "text-right pr-[2ch]" ] [ Html.text (String.fromInt rank.bbv) ]
                                                         , Html.td [ UI.cls "text-right" ]
                                                             [ UI.btn
                                                                 [ Html.Events.onClick (SelectBlackHatTarget { regionName = rank.name }) ]
