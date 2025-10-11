@@ -93,7 +93,7 @@ section : List (Html.Attribute msg) -> List (Html msg) -> Html msg
 section attrs children =
     col
         (attrs
-            ++ [ cls "border border-gray-200 bg-gray-200/30 rounded-md p-2 shadow-sm"
+            ++ [ cls "border border-gray-200 bg-gray-200/30 rounded-md p-2 shadow-sm h-fit"
                , Html.Attributes.style "backdrop-filter" "blur(6px)"
                ]
         )
@@ -213,7 +213,7 @@ pluralWord : Word -> String
 pluralWord word =
     case word of
         Chechtak ->
-            "Chechtak"
+            "Chechták"
 
         Mesic ->
             "měsíc"
@@ -235,10 +235,10 @@ pluralRules =
             ]
           )
         , ( pluralWord Chechtak
-          , [ ( PluralRules.One, "Chechtak" )
-            , ( PluralRules.Few, "Chechtaky" ) -- 2..4
-            , ( PluralRules.Many, "Chechtaku" )
-            , ( PluralRules.Other, "Chechtaku" )
+          , [ ( PluralRules.One, "Chechták" )
+            , ( PluralRules.Few, "Chechtáky" ) -- 2..4
+            , ( PluralRules.Many, "Chechtáků" )
+            , ( PluralRules.Other, "Chechtáků" )
             ]
           )
         ]

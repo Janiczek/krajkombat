@@ -699,7 +699,14 @@ viewGameEnded_ message sprite lore juice resultsData =
     [ UI.col [ UI.cls "items-center" ]
         [ UI.handwriting message
         , UI.sprite sprite
-        , UI.section [] [ viewRanking resultsData.ranking ]
+        , UI.row []
+            [ UI.section [] [ viewRanking resultsData.ranking ]
+            , Html.Lazy.lazy4 BBVChart.view
+                resultsData.you.resources.bbvPerMonth
+                resultsData.you.resources.bbv
+                0
+                resultsData.bbvHistory
+            ]
         , UI.prose lore
         , UI.btn [ Html.Events.onClick StartGame ] juice.tryAgainMessage
         , UI.btn [ Html.Events.onClick BackToMainMenu ] "Do menu"
@@ -828,8 +835,8 @@ viewResources stats =
         , UI.heading "Kasa:"
         , Html.table [ UI.cls "min-w-[20ch] table-auto border-spacing-y-2" ]
             [ Html.tbody []
-                [ statRow "💰 Chechtaky" (String.fromInt stats.ap)
-                , statRow "💶 Chechtaky/měsíc" (String.fromInt stats.apPerMonth)
+                [ statRow "💰 Chechtáky" (String.fromInt stats.ap)
+                , statRow "💶 Chechtáky/měsíc" (String.fromInt stats.apPerMonth)
                 , statRow "📈 Dobre nahody/měsíc" (UI.float (toFloat stats.gref / 100))
                 , statRow "📉 Špatne nahody/měsíc" (UI.float (toFloat stats.bref / 100))
                 , statRow "⚽ BrankyBodyVteřiny" (String.fromInt stats.bbv)

@@ -38,7 +38,7 @@ description upgrade =
             """
 SPŠE chce zorganizovat intenzivni Black Hat Bootcamp pro tvou sekretařku. Z te
 se stane nadupany hacker a každych pět měsíců se mužeš nabourat do narodni
-KrajKombat databaze a ukrast někomu pulku bodu. Myslim že si Maňa zasluži
+KrajKombat databaze a ukrast někomu nějake body. Myslim že si Maňa zasluži
 přidat.
 """
 
@@ -73,7 +73,7 @@ chance upgrade =
             0.4
 
         DataAnalytics ->
-            0.9
+            0.6
 
 
 type alias BlackHatData =
@@ -97,4 +97,4 @@ advanceBlackHat data =
 
 blackHatAmount : Int -> Int
 blackHatAmount bbv =
-    bbv // 2
+    bbv // 4

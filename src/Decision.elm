@@ -145,7 +145,6 @@ decisionContentGenerator type_ =
                     , ( "Koučovani tělocvikařu"
                       , [ sub 30 40 AP
                         , sub 5 10 APPerMonth
-                        , add 8 10 BBV
                         , add 3 5 BBVPerMonth
                         ]
                       )
@@ -163,7 +162,7 @@ decisionContentGenerator type_ =
                       )
                     , ( "Dustojne platy učitelu"
                       , [ sub 10 20 APPerMonth
-                        , add 15 25 GREF
+                        , add 5 10 GREF
                         ]
                       )
                     ]

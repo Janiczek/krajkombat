@@ -49,6 +49,7 @@ type alias ResultsData =
     { you : Region
     , others : List Region
     , ranking : Ranking
+    , bbvHistory : Dict String (List Int)
     }
 
 
@@ -183,6 +184,7 @@ end game =
                     { you = game.you
                     , others = game.others
                     , ranking = ranking
+                    , bbvHistory = game.bbvHistory
                     }
             in
             if fst.names == [ Region.youName ] then
