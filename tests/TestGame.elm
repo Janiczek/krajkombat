@@ -1,11 +1,10 @@
 module TestGame exposing (suite)
 
-import AssocSet
 import Expect
 import Fuzz
 import Game exposing (Game, Results(..), end)
 import Region exposing (Region, youName)
-import Resource
+import Resource exposing (Resources)
 import Test exposing (Test)
 
 
@@ -110,12 +109,14 @@ suite =
 createRegion : String -> Int -> Region
 createRegion name bbv =
     let
+        initResources : Resources
         initResources =
             Resource.init
     in
     { name = name
     , resources = { initResources | bbv = bbv }
-    , upgrades = AssocSet.empty
+    , blackHatUpgrade = Nothing
+    , randomEvents = []
     , upgradesAvailable = []
     , availableDecisions = []
     }
