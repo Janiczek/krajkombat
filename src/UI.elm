@@ -10,6 +10,7 @@ module UI exposing
     , mod
     , modal
     , none
+    , prose
     , row
     , section
     , sprite
@@ -17,6 +18,7 @@ module UI exposing
 
 import Html exposing (Html)
 import Html.Attributes
+import Markdown
 import Round
 
 
@@ -47,6 +49,7 @@ btn attrs label =
                , mod "hover" "bg-blue-400 shadow-md cursor-pointer"
                , mod "active" "bg-blue-500 shadow-inner translate-y-[2px]"
                , mod "disabled" "bg-gray-300 text-gray-500 cursor-not-allowed shadow-none"
+               , mod "focus" "outline-2 outline-offset-1 outline-blue-500"
                ]
         )
         [ Html.text label ]
@@ -180,3 +183,10 @@ cssVars vars =
         |> List.map (\( name, value ) -> "--" ++ name ++ ": " ++ value)
         |> String.join ";"
         |> Html.Attributes.attribute "style"
+
+
+prose : String -> Html msg
+prose content =
+    Html.p
+        [ cls "text-sm max-w-[80ch] leading-relaxed" ]
+        [ Markdown.toHtml [] content ]

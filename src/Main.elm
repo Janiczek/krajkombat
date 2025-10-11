@@ -1,8 +1,9 @@
-port module Main exposing (Flags, Model, Msg, main)
+module Main exposing (Flags, Model, Msg, main)
 
 import Browser
 import Browser.Dom
 import Browser.Events
+import Cmd.Extra
 import Constants
 import Decision exposing (Decision)
 import Game exposing (Game)
@@ -12,7 +13,6 @@ import Html.Events
 import Juice exposing (Juice)
 import List.Extra
 import Logo
-import Markdown
 import PluralRules
 import PluralRules.Cz
 import Random
@@ -62,13 +62,9 @@ type Msg
     | BackToMainMenu
       -- Other
     | ToggleMusic
-      -- Animation
     | AnimateLogo Float
-      -- Screen dimensions
     | GotScreenSize Float Float
-
-
-port blur : () -> Cmd msg
+    | FocusedModalButton
 
 
 main : Program Flags Model Msg
@@ -91,7 +87,22 @@ init flags =
         ( juice, newSeed ) =
             Random.step Juice.generator seed
     in
-    ( { gamePhase = Game.MainMenu
+    ( { gamePhase =
+            --Game.MainMenu
+            Game.GameEnded
+                (Game.YouLost
+                    { you =
+                        { name = Region.youName
+                        , availableDecisions = []
+                        , resources = Resource.init
+                        , blackHatUpgrade = Nothing
+                        , randomEvents = []
+                        , upgradesAvailable = []
+                        }
+                    , others = []
+                    , ranking = []
+                    }
+                )
       , juice = juice
       , randomSeed = newSeed
       , blackHatOperationInProgress = False
@@ -114,6 +125,11 @@ subscriptions _ =
         [ Browser.Events.onAnimationFrameDelta AnimateLogo
         , Browser.Events.onResize (\width height -> GotScreenSize (toFloat width) (toFloat height))
         ]
+
+
+modalButtonId : String
+modalButtonId =
+    "modal-button"
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -164,7 +180,10 @@ update msg model =
                             else
                                 { newModel | gamePhase = Game.GameLoop newGame }
                     in
-                    ( finalModel, blur () )
+                    ( finalModel
+                    , Browser.Dom.focus modalButtonId
+                        |> Task.attempt (\_ -> FocusedModalButton)
+                    )
 
         BackToMainMenu ->
             ( { model | gamePhase = Game.MainMenu }
@@ -182,6 +201,10 @@ update msg model =
         ApplyNextRandomEvent ->
             model
                 |> updateGameLoop Game.ApplyNextRandomEvent
+                |> Cmd.Extra.add
+                    (Browser.Dom.focus modalButtonId
+                        |> Task.attempt (\_ -> FocusedModalButton)
+                    )
 
         StartBlackHatOperation ->
             ( { model | blackHatOperationInProgress = True }
@@ -280,6 +303,9 @@ update msg model =
               }
             , Cmd.none
             )
+
+        FocusedModalButton ->
+            ( model, Cmd.none )
 
 
 advanceJuice : Model -> Model
@@ -444,9 +470,7 @@ viewIntroSection thought content =
             [ UI.cls "text-right align-top text-2xl font-handwriting -rotate-10 pt-4 pr-4 text-red-600" ]
             [ Html.span [] [ Html.text thought ] ]
         , Html.td [ UI.cls "pb-[2ch]" ]
-            [ Html.p
-                [ UI.cls "text-sm max-w-[80ch] leading-relaxed" ]
-                [ Markdown.toHtml [] content ]
+            [ UI.prose content
             ]
         ]
 
@@ -554,7 +578,7 @@ viewDecisions yourResources decisions =
                 |> List.Extra.gatherEqualsBy .type_
                 |> List.map (\( x, xs ) -> ( x.type_, x :: xs ))
     in
-    UI.col []
+    UI.col [ UI.cls "w-[60ch]" ]
         (groups
             |> List.map (viewDecisionsOfType yourResources)
         )
@@ -637,28 +661,59 @@ viewGameEnded : Juice -> Game.Results -> List (Html Msg)
 viewGameEnded juice results =
     case results of
         Game.YouWon data ->
-            viewGameEnded_ juice.youWonMessage UI.CharWin juice data
+            viewGameEnded_ juice.youWonMessage UI.CharWin youWonLore juice data
 
         Game.YouLost data ->
-            viewGameEnded_ juice.youLostMessage UI.CharLose juice data
+            viewGameEnded_ juice.youLostMessage UI.CharLose youLostLore juice data
 
         Game.YouLostByDraw data ->
-            viewGameEnded_ juice.youLostByDrawMessage UI.CharDraw juice data
+            viewGameEnded_ juice.youLostByDrawMessage UI.CharDraw youLostByDrawLore juice data
 
         Game.Bug ->
             [ Html.h2 [] [ Html.text "Ups, se to rozbilo" ] ]
 
 
-viewGameEnded_ : String -> UI.Sprite -> Juice -> Game.ResultsData -> List (Html Msg)
-viewGameEnded_ message sprite juice resultsData =
-    [ UI.col []
+viewGameEnded_ : String -> UI.Sprite -> String -> Juice -> Game.ResultsData -> List (Html Msg)
+viewGameEnded_ message sprite lore juice resultsData =
+    [ UI.col [ UI.cls "items-center" ]
         [ Html.h2 [] [ Html.text message ]
         , UI.sprite sprite
         , viewRanking resultsData.ranking
+        , UI.prose lore
         , UI.btn [ Html.Events.onClick StartGame ] juice.tryAgainMessage
         , UI.btn [ Html.Events.onClick BackToMainMenu ] "Do menu"
         ]
     ]
+
+
+youWonLore : String
+youWonLore =
+    """
+Navzdory všem překážkám Moravskoslezský kraj vyhrál KrajKombat. Prezident Bico
+tvůj rozpočet nechá na pokoji, a tvoje teplé místečko naproti Sadům Milady
+Horákové také. Protentokrát...
+"""
+
+
+youLostLore : String
+youLostLore =
+    """
+Nevyšlo to, a pravidla KrajKombatu jsou neúprosná. Tvůj kraj čeká chudoba a jako
+trest Prezident Bico zdvojnásobuje kvóty na uhlí na další rok _(ano, co si
+myslíš, že populisti zachránili planetu a jedeme na solár? HahaHAHAHA)_. V dole
+Lazy se pro tebe už chystá uniforma...
+"""
+
+
+youLostByDrawLore : String
+youLostByDrawLore =
+    """
+Jako ano, na jednu stranu má Moravskoslezský kraj nejvíc bodů v KrajKombatu, ale
+na druhou stranu, to nestačí. Ostatní jsou na tom stejně, a když nemůže být
+vítěz jen jeden, nebude vítěz žádný. Prezident Bico chystá speciální trest pro
+všechny hejtmany, kteří způsobili tak nudnou remízu. Tak už se chystej, jdem do
+Werku...
+"""
 
 
 medalForRank : Int -> String
@@ -984,7 +1039,9 @@ viewRandomEventsModal model =
                                 UI.none
                             , UI.row [ UI.cls "justify-between items-center" ]
                                 [ UI.btn
-                                    [ Html.Events.onClick ApplyNextRandomEvent ]
+                                    [ Html.Events.onClick ApplyNextRandomEvent
+                                    , Html.Attributes.id modalButtonId
+                                    ]
                                     buttonText
                                 ]
                             ]

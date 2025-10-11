@@ -94,5 +94,7 @@ tryAgainMessageTexts : ( String, List String )
 tryAgainMessageTexts =
     ( "Valim to zkusit znovu"
     , [ "Hrat znovu"
+      , "Poď do mě, tě sundam kolikrat budu chtit"
+      , "Dem znovu, ti rozhodim sandál"
       ]
     )
