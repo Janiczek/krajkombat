@@ -32,11 +32,11 @@ description upgrade =
     case upgrade of
         BlackHatBootcamp ->
             """
-            SPŠE chce zorganizovat intenzivni Black Hat Bootcamp pro tvou
-            sekretařku. Z te se stane nadupany hacker a každe tři měsice se
-            mužeš nabourat do narodni KrajKombat databaze a ukrast někomu pulku
-            bodu. Myslim že si Maňa zasluži přidat.
-            """
+SPŠE chce zorganizovat intenzivni Black Hat Bootcamp pro tvou
+sekretařku. Z te se stane nadupany hacker a každe čtyři měsice se
+mužeš nabourat do narodni KrajKombat databaze a ukrast někomu pulku
+bodu. Myslim že si Maňa zasluži přidat.
+"""
 
 
 cost : Upgrade -> List ResourceDelta
@@ -71,7 +71,7 @@ initBlackHat =
 
 resetBlackHat : BlackHatData
 resetBlackHat =
-    { monthsUntilAvailable = 3 }
+    { monthsUntilAvailable = 4 }
 
 
 advanceBlackHat : BlackHatData -> BlackHatData

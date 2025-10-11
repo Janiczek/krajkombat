@@ -15,10 +15,10 @@ type alias RandomEvent =
 -}
 goodGenerator : Generator RandomEvent
 goodGenerator =
-    Random.uniform ( "Dotace vyšly hej", [ add 150 300 AP ] )
-        [ ( "Naš tym ty Pražaky zas uplně rozdupal", [ add 40 80 AP, add 15 30 BBV ] )
-        , ( "Hackeři z SPŠE se někam naburali", [ add 140 200 AP, add 1 2 BREF ] )
-        , ( "Hackeři z SPŠE zjistili že databaze KrajKombatu ma defaultni heslo", [ add 10 20 BBV ] )
+    Random.uniform ( "Dotace vyšly hej!", [ add 150 300 AP ] )
+        [ ( "Naš tym ty Pražaky zas uplně rozdupal!", [ add 40 80 AP, add 15 30 BBV ] )
+        , ( "Hackeři z SPŠE se někam naburali...", [ add 140 200 AP, add 1 2 BREF ] )
+        , ( "Hackeři z SPŠE zjistili že databaze KrajKombatu ma defaultni heslo 💀", [ add 10 20 BBV ] )
         , ( "Naše škola byla nejlepši v republice kamo", [ add 40 80 AP, add 20 40 APPerMonth, add 3 5 GREF ] )
         ]
         |> ResourceDelta.bundleGenerator
@@ -35,9 +35,9 @@ goodGenerator =
 -}
 badGenerator : Generator RandomEvent
 badGenerator =
-    Random.uniform ( "Přišli nam na podvod", [ sub 40 70 AP, add 2 5 BREF ] )
-        [ ( "Na tom hřišti sme to moc nedali", [ add 5 10 BREF, sub 1 2 GREF ] )
-        , ( "Zas nějaky doping", [ sub 20 40 AP, sub 2 4 BBVPerMonth ] )
+    Random.uniform ( "Přišli nam na podvod.", [ sub 40 70 AP, add 2 5 BREF ] )
+        [ ( "Na tom hřišti sme to moc nedali...", [ add 5 10 BREF, sub 1 2 GREF ] )
+        , ( "Zas nějaky doping 💉", [ sub 20 40 AP, sub 2 4 BBVPerMonth ] )
         , ( "Hackeři z SPŠE po sobě nezametli stopy kuva", [ sub 30 60 AP ] )
         ]
         |> ResourceDelta.bundleGenerator

@@ -16,6 +16,7 @@ type Type
     = Investment
     | InvestmentLongTerm
     | Prevention
+    | Micromanagement
 
 
 type alias Decision =
@@ -59,6 +60,7 @@ typeGenerator =
         Investment
         [ InvestmentLongTerm
         , Prevention
+        , Micromanagement
         ]
 
 
@@ -200,6 +202,21 @@ decisionContentGenerator type_ =
                       )
                     ]
 
+            Micromanagement ->
+                Random.uniform
+                    ( "Osobně převezmi zasilku COVID masek"
+                    , [ sub 40 60 AP
+                      , add 5 10 GREF
+                      , sub 2 4 BREF
+                      ]
+                    )
+                    [ ( "Vyřeš hadku na staveništi na Frýdecke"
+                      , [ sub 30 50 AP
+                        , sub 1 3 BREF
+                        ]
+                      )
+                    ]
+
 
 keepUniqueNames : List Decision -> List Decision
 keepUniqueNames decisions =
@@ -220,3 +237,6 @@ typeLabel type_ =
 
         Prevention ->
             "Prevence"
+
+        Micromanagement ->
+            "Mikromenedžment"

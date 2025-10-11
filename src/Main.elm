@@ -88,21 +88,22 @@ init flags =
             Random.step Juice.generator seed
     in
     ( { gamePhase =
-            --Game.MainMenu
-            Game.GameEnded
-                (Game.YouLost
-                    { you =
-                        { name = Region.youName
-                        , availableDecisions = []
-                        , resources = Resource.init
-                        , blackHatUpgrade = Nothing
-                        , randomEvents = []
-                        , upgradesAvailable = []
-                        }
-                    , others = []
-                    , ranking = []
-                    }
-                )
+            Game.MainMenu
+
+      --Game.GameEnded
+      --    (Game.YouLostByDraw
+      --        { you =
+      --            { name = ""
+      --            , resources = Resource.init
+      --            , blackHatUpgrade = Nothing
+      --            , upgradesAvailable = []
+      --            , randomEvents = []
+      --            , availableDecisions = []
+      --            }
+      --        , others = []
+      --        , ranking = []
+      --        }
+      --    )
       , juice = juice
       , randomSeed = newSeed
       , blackHatOperationInProgress = False
@@ -467,8 +468,8 @@ viewIntroSection : String -> String -> Html Msg
 viewIntroSection thought content =
     Html.tr []
         [ Html.td
-            [ UI.cls "text-right align-top text-2xl font-handwriting -rotate-10 pt-4 pr-4 text-red-600" ]
-            [ Html.span [] [ Html.text thought ] ]
+            [ UI.cls "text-right align-top pt-2 pr-4" ]
+            [ UI.handwriting thought ]
         , Html.td [ UI.cls "pb-[2ch]" ]
             [ UI.prose content
             ]
@@ -499,7 +500,7 @@ to je jen jeho šílená úchylka, nebo se toto děje i jinde, to nikdo neví. V
 normálním lidem nezbývá než se snažit zachovat si nějaký zbytek normálnosti a
 udělat jen to nejnutnější, aby prezident dal pokoj s nesmyslnými nároky.
 """
-                    , viewIntroSection "Konečně něco o mně" """
+                    , viewIntroSection "Konečně se mluvi o mně" """
 **Ty jsi hejtman Moravskoslezského kraje Ing. Josef Bělica**, a KrajKombat ignorovat
 nemůžeš, jelikož to je jediný způsoob, jak si kraje ČR můžou získat přízeň
 prezidenta (a nebýt v příštím volebním období nemilosrdně seškrtán).
@@ -577,6 +578,7 @@ viewDecisions yourResources decisions =
             decisions
                 |> List.Extra.gatherEqualsBy .type_
                 |> List.map (\( x, xs ) -> ( x.type_, x :: xs ))
+                |> List.sortBy (Tuple.first >> Decision.typeLabel)
     in
     UI.col [ UI.cls "w-[60ch]" ]
         (groups
@@ -676,9 +678,9 @@ viewGameEnded juice results =
 viewGameEnded_ : String -> UI.Sprite -> String -> Juice -> Game.ResultsData -> List (Html Msg)
 viewGameEnded_ message sprite lore juice resultsData =
     [ UI.col [ UI.cls "items-center" ]
-        [ Html.h2 [] [ Html.text message ]
+        [ UI.handwriting message
         , UI.sprite sprite
-        , viewRanking resultsData.ranking
+        , UI.section [] [ viewRanking resultsData.ranking ]
         , UI.prose lore
         , UI.btn [ Html.Events.onClick StartGame ] juice.tryAgainMessage
         , UI.btn [ Html.Events.onClick BackToMainMenu ] "Do menu"
@@ -1102,7 +1104,7 @@ viewBlackHatOperationModal model =
                                             Html.tr [ UI.mod "hover" "bg-blue-100" ]
                                                 [ Html.td [] [ Html.text rank.name ]
                                                 , Html.td [ UI.cls "text-right pr-2" ] [ Html.text (String.fromInt rank.bbv) ]
-                                                , Html.td []
+                                                , Html.td [ UI.cls "text-right" ]
                                                     [ UI.btn
                                                         [ Html.Events.onClick (SelectBlackHatTarget { regionName = rank.name }) ]
                                                         ("Čmajz " ++ String.fromInt (Upgrade.blackHatAmount rank.bbv))

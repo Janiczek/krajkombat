@@ -5,6 +5,7 @@ module UI exposing
     , col
     , cssVars
     , float
+    , handwriting
     , heading
     , link
     , mod
@@ -190,3 +191,10 @@ prose content =
     Html.p
         [ cls "text-sm max-w-[80ch] leading-relaxed" ]
         [ Markdown.toHtml [] content ]
+
+
+handwriting : String -> Html msg
+handwriting text =
+    Html.span
+        [ cls "inline-block text-2xl font-handwriting -rotate-8 text-red-600" ]
+        [ Html.text text ]
