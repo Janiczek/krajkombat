@@ -4,7 +4,6 @@ import AssocSet
 import Browser
 import Game exposing (Game)
 import Html exposing (Html)
-import Html.Attributes
 import Html.Events
 import Juice exposing (Juice)
 import Random
@@ -164,7 +163,7 @@ view model =
     { title = title
     , body =
         [ Html.div
-            [ UI.cls "font-mono p-2" ]
+            [ UI.cls "font-mono p-2 flex justify-center" ]
             (viewGamePhase model.juice model.gamePhase)
         ]
     }
@@ -218,22 +217,42 @@ viewGameLoop juice game =
         ranking =
             Ranking.rank { you = game.you, others = game.others }
     in
-    [ UI.col []
-        [ viewMonthStats
-            juice.advanceMonthButtonText
-            game.monthsLeft
+    [ UI.col [ UI.cls "w-fit" ]
+        [ UI.row [ UI.cls "justify-center" ]
+            [ viewMonthStats
+                juice.advanceMonthButtonText
+                game.monthsLeft
+            ]
         , UI.row []
-            [ UI.col []
-                [ UI.heading Region.youName
-                , viewYourStats game.you
+            [ UI.section
+                [ UI.heading "Duležita rozhodnuti"
+                , viewDecisions game.availableDecisions
                 ]
             , UI.col []
-                [ UI.heading "KrajKombat - Průběžna tabulka"
-                , viewRanking ranking
+                [ UI.section
+                    [ UI.heading Region.youName
+                    , viewYourStats game.you
+                    ]
+                , UI.section
+                    [ UI.heading "KrajKombat - Průběžna tabulka"
+                    , viewRanking ranking
+                    ]
                 ]
             ]
         ]
     ]
+
+
+viewDecisions : List Game.Decision -> Html Msg
+viewDecisions decisions =
+    Html.ul []
+        (decisions |> List.map viewDecision)
+
+
+viewDecision : Game.Decision -> Html Msg
+viewDecision decision =
+    Html.li []
+        [ Html.text decision.flavorText ]
 
 
 viewMonthStats : String -> Int -> Html Msg

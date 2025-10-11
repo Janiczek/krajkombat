@@ -6,6 +6,7 @@ module UI exposing
     , link
     , none
     , row
+    , section
     )
 
 import Html exposing (Html)
@@ -72,3 +73,10 @@ link href label =
         , mod "hover" "text-blue-500"
         ]
         [ Html.text label ]
+
+
+section : List (Html msg) -> Html msg
+section children =
+    col
+        [ cls "border border-gray-200 bg-gray-50 rounded-md p-2 shadow-sm" ]
+        children

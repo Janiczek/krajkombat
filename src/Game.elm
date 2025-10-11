@@ -1,5 +1,7 @@
 module Game exposing
-    ( Game
+    ( Decision
+    , DecisionType(..)
+    , Game
     , Phase(..)
     , Results(..)
     , ResultsData
@@ -8,7 +10,7 @@ module Game exposing
     , gameInitGenerator
     )
 
-import AssocSet
+import Dict
 import Logic
 import Random exposing (Generator)
 import Random.Extra
@@ -182,7 +184,18 @@ gameInitGenerator =
         )
         |> Random.Extra.andMap (Region.generator Region.youName)
         |> Random.Extra.andMap (Region.listGenerator otherRegionsCount)
-        |> Random.Extra.andMap (Random.list availableDecisionsPerMonth decisionGenerator)
+        |> Random.Extra.andMap
+            (Random.list availableDecisionsPerMonth decisionGenerator
+                |> Random.map keepUniqueNames
+            )
+
+
+keepUniqueNames : List Decision -> List Decision
+keepUniqueNames decisions =
+    decisions
+        |> List.map (\decision -> ( decision.flavorText, decision ))
+        |> Dict.fromList
+        |> Dict.values
 
 
 availableDecisionsPerMonth : Int
