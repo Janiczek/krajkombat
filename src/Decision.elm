@@ -9,7 +9,7 @@ import Dict
 import Random exposing (Generator)
 import Random.Extra
 import Resource exposing (Resources)
-import ResourceDelta exposing (ResourceDelta(..), add, addF, sub, subF)
+import ResourceDelta exposing (ResourceDelta(..), add, sub)
 
 
 type Type
@@ -70,53 +70,53 @@ decisionContentGenerator type_ =
                 Random.uniform
                     ( "Rozkopej Rudnou ale musi to byt"
                     , [ sub 40 50 AP
-                      , addF 0.05 0.15 GREF
-                      , addF 0.02 0.05 BREF
+                      , add 5 15 GREF
+                      , add 2 5 BREF
                       ]
                     )
                     [ ( "Oprav chodniky"
                       , [ sub 20 30 AP
-                        , addF 0.01 0.03 GREF
-                        , subF 0.01 0.03 BREF
+                        , add 1 3 GREF
+                        , sub 1 3 BREF
                         ]
                       )
                     , ( "Mistni sportovni kroužky"
                       , [ sub 30 40 AP
-                        , addF 0.02 0.04 GREF
+                        , add 2 4 GREF
                         , add 1 2 BBVPerMonth
                         ]
                       )
                     , ( "Postav nove Bazaly"
                       , [ sub 90 160 AP
                         , add 30 80 APPerMonth
-                        , addF 0.1 0.15 GREF
+                        , add 10 15 GREF
                         , add 5 10 BBVPerMonth
                         ]
                       )
                     , ( "Modernizuj dopravu"
                       , [ sub 40 70 AP
                         , add 25 35 APPerMonth
-                        , addF 0.08 0.12 GREF
+                        , add 8 12 GREF
                         ]
                       )
                     , ( "Investuj do zdravotnictvi"
                       , [ sub 35 45 AP
                         , add 18 28 APPerMonth
-                        , addF 0.07 0.12 GREF
-                        , subF 0.04 0.09 BREF
+                        , add 7 12 GREF
+                        , sub 4 9 BREF
                         ]
                       )
                     , ( "Nova lepši sekretařka"
                       , [ sub 3 8 AP
                         , add 5 15 APPerMonth
-                        , addF 0.01 0.03 GREF
-                        , addF 0.01 0.03 BREF
+                        , add 1 3 GREF
+                        , add 1 3 BREF
                         ]
                       )
                     , ( "Sabatikal na Bali"
                       , [ sub 20 40 AP
-                        , addF 0.02 0.04 GREF
-                        , addF 0.01 0.03 BREF
+                        , add 2 4 GREF
+                        , add 1 3 BREF
                         ]
                       )
                     ]
@@ -126,21 +126,21 @@ decisionContentGenerator type_ =
                     ( "Dlouhodoba strategie rozvoje"
                     , [ sub 30 50 AP
                       , sub 4 8 APPerMonth
-                      , addF 0.05 0.15 GREF
-                      , subF 0.02 0.08 BREF
+                      , add 5 15 GREF
+                      , sub 2 8 BREF
                       ]
                     )
                     [ ( "Vyzkum do biohackingu"
                       , [ sub 80 120 AP
                         , sub 5 10 APPerMonth
-                        , addF 0.15 0.25 GREF
+                        , add 15 25 GREF
                         , add 4 6 BBVPerMonth
                         ]
                       )
                     , ( "Digitalizace veřejne spravy"
                       , [ sub 120 180 AP
                         , sub 15 20 APPerMonth
-                        , addF 0.25 0.35 GREF
+                        , add 25 35 GREF
                         ]
                       )
                     , ( "Koučovani tělocvikařu"
@@ -153,19 +153,19 @@ decisionContentGenerator type_ =
                     , ( "Zelena transformace bo GrinDyl"
                       , [ sub 30 50 AP
                         , add 20 30 APPerMonth
-                        , addF 0.07 0.12 GREF
+                        , add 7 12 GREF
                         ]
                       )
                     , ( "Mezinarodni spoluprace"
                       , [ sub 40 60 AP
                         , add 10 20 APPerMonth
-                        , addF 0.03 0.08 GREF
-                        , addF 0.01 0.02 BREF
+                        , add 3 8 GREF
+                        , add 1 2 BREF
                         ]
                       )
                     , ( "Dustojne platy učitelu"
                       , [ sub 10 20 APPerMonth
-                        , addF 0.15 0.25 GREF
+                        , add 15 25 GREF
                         ]
                       )
                     ]
@@ -175,33 +175,33 @@ decisionContentGenerator type_ =
                     ( "Prevence kriminality"
                     , [ sub 20 30 AP
                       , sub 5 15 APPerMonth
-                      , subF 0.05 0.15 BREF
+                      , sub 5 15 BREF
                       ]
                     )
                     [ ( "Najmi sekuriťaky na Bazaly"
                       , [ sub 20 40 AP
-                        , subF 0.05 0.15 BREF
+                        , sub 5 15 BREF
                         ]
                       )
                     , ( "Sociálni programy pro chude"
                       , [ sub 15 25 AP
                         , add -1 10 APPerMonth
-                        , addF 0.01 0.04 GREF
-                        , subF 0.05 0.15 BREF
+                        , add 1 4 GREF
+                        , sub 5 15 BREF
                         ]
                       )
                     , ( "Policejni stat kamo"
                       , [ sub 50 80 AP
                         , add 10 30 APPerMonth
-                        , subF 0.1 0.2 GREF
-                        , subF 0.1 0.4 BREF
+                        , sub 10 20 GREF
+                        , sub 10 40 BREF
                         ]
                       )
                     , ( "Komunitní práce"
                       , [ sub 18 28 AP
                         , add -5 10 APPerMonth
-                        , addF 0.03 0.08 GREF
-                        , subF 0.09 0.18 BREF
+                        , add 3 8 GREF
+                        , sub 9 18 BREF
                         ]
                       )
                     ]

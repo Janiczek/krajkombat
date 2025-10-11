@@ -527,8 +527,8 @@ viewResources stats =
             [ Html.tbody []
                 [ statRow "💰 Chechtaky" (String.fromInt stats.ap)
                 , statRow "💶 Chechtaky/měsíc" (String.fromInt stats.apPerMonth)
-                , statRow "📈 Dobre nahody/měsíc" (UI.float stats.gref)
-                , statRow "📉 Špatne nahody/měsíc" (UI.float stats.bref)
+                , statRow "📈 Dobre nahody/měsíc" (UI.float (toFloat stats.gref / 100))
+                , statRow "📉 Špatne nahody/měsíc" (UI.float (toFloat stats.bref / 100))
                 , statRow "⚽ BrankyBodyVteřiny" (String.fromInt stats.bbv)
                 , statRow "🏒 BrankyBodyVteřiny/měsíc" (String.fromInt stats.bbvPerMonth)
                 ]
@@ -681,10 +681,10 @@ viewDelta { canApply } delta =
                     plusMinus n ++ String.fromInt (abs n) ++ " Chechtaky/měsíc"
 
                 GREF n ->
-                    plusMinus n ++ UI.float (abs n) ++ " Dobre nahody/měsíc"
+                    plusMinus n ++ UI.float (toFloat (abs n) / 100) ++ " Dobre nahody/měsíc"
 
                 BREF n ->
-                    plusMinus n ++ UI.float (abs n) ++ " Špatne nahody/měsíc"
+                    plusMinus n ++ UI.float (toFloat (abs n) / 100) ++ " Špatne nahody/měsíc"
 
                 BBV n ->
                     plusMinus n ++ String.fromInt (abs n) ++ " BrankyBodyVteřiny"

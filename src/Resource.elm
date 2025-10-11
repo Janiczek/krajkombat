@@ -12,8 +12,8 @@ import ResourceDelta exposing (ResourceDelta(..))
 type alias Resources =
     { ap : Int
     , apPerMonth : Int
-    , gref : Float
-    , bref : Float
+    , gref : Int
+    , bref : Int
     , bbv : Int
     , bbvPerMonth : Int
     }
@@ -23,8 +23,8 @@ init : Resources
 init =
     { ap = 100
     , apPerMonth = 100
-    , gref = 0.6
-    , bref = 0.4
+    , gref = 60
+    , bref = 40
     , bbv = 0
     , bbvPerMonth = 4 -- just under 100 after 24 months
     }

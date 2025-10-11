@@ -1,10 +1,8 @@
 module ResourceDelta exposing
     ( ResourceDelta(..)
     , add
-    , addF
     , bundleGenerator
     , sub
-    , subF
     )
 
 import Random exposing (Generator)
@@ -14,20 +12,20 @@ import Random.Extra
 type ResourceDelta
     = AP Int
     | APPerMonth Int
-    | GREF Float
-    | BREF Float
+    | GREF Int
+    | BREF Int
     | BBV Int
     | BBVPerMonth Int
 
 
-floatValue : ResourceDelta -> Float
-floatValue delta =
+value : ResourceDelta -> Int
+value delta =
     case delta of
         AP n ->
-            toFloat n
+            n
 
         APPerMonth n ->
-            toFloat n
+            n
 
         GREF n ->
             n
@@ -36,10 +34,10 @@ floatValue delta =
             n
 
         BBV n ->
-            toFloat n
+            n
 
         BBVPerMonth n ->
-            toFloat n
+            n
 
 
 add : Int -> Int -> (Int -> ResourceDelta) -> Generator ResourceDelta
@@ -48,21 +46,9 @@ add min max constructor =
         |> Random.map constructor
 
 
-addF : Float -> Float -> (Float -> ResourceDelta) -> Generator ResourceDelta
-addF min max constructor =
-    Random.float min max
-        |> Random.map constructor
-
-
 sub : Int -> Int -> (Int -> ResourceDelta) -> Generator ResourceDelta
 sub min max constructor =
     Random.int min max
-        |> Random.map (negate >> constructor)
-
-
-subF : Float -> Float -> (Float -> ResourceDelta) -> Generator ResourceDelta
-subF min max constructor =
-    Random.float min max
         |> Random.map (negate >> constructor)
 
 
@@ -76,7 +62,7 @@ bundleGenerator generator =
                         (\deltas_ ->
                             ( flavorText
                             , deltas_
-                                |> List.filter (\delta -> floatValue delta /= 0)
+                                |> List.filter (\delta -> value delta /= 0)
                             )
                         )
             )
