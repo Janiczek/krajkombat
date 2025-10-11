@@ -172,7 +172,7 @@ view model =
     { title = title
     , body =
         [ Html.div
-            [ UI.cls "font-mono p-2 flex justify-center" ]
+            [ UI.cls "font-mono p-2 pt-8 flex justify-center" ]
             (viewGamePhase model.juice model.gamePhase)
         ]
     }
@@ -196,7 +196,7 @@ viewGamePhase juice phase =
 
 viewMainMenu : List (Html Msg)
 viewMainMenu =
-    [ UI.col [ UI.cls "items-center justify-center h-[60dvh] min-h-fit" ]
+    [ UI.col [ UI.cls "items-center" ]
         [ Html.h1 [ UI.cls "font-bold text-2xl" ] [ Html.text title ]
         , Html.h2 [ UI.cls "text-sm" ]
             [ Html.text "Zadavatel: Game Devs Ostrava / Zpracovatel: "
@@ -321,7 +321,9 @@ viewMonthStats advanceMonthButtonText monthsLeft =
         -- TODO: as there are fewer and fewer months left, add text effects, change colors, add sweating, shaking (on hover?)
         -- TODO: random funny button text
         [ Html.text ("Zbývá měsíců: " ++ String.fromInt monthsLeft)
-        , UI.btn [ Html.Events.onClick AdvanceMonth ] advanceMonthButtonText
+        , UI.btn
+            [ Html.Events.onClick AdvanceMonth ]
+            (advanceMonthButtonText ++ " →")
         ]
 
 
@@ -436,34 +438,29 @@ viewYourStats region =
 
 viewResources : Resources -> Html msg
 viewResources stats =
+    let
+        statRow : String -> String -> Html msg -> Html msg
+        statRow label description valueCell =
+            Html.tr []
+                [ Html.td [ UI.cls "py-1 pr-2 text-base" ]
+                    [ UI.col [ UI.cls "gap-y-0" ]
+                        [ Html.text label
+                        , Html.span [ UI.cls "text-xs text-gray-500" ] [ Html.text description ]
+                        ]
+                    ]
+                , Html.td [ UI.cls "text-right align-top text-base" ] [ valueCell ]
+                ]
+    in
     UI.col []
         [ UI.heading "Kasa:"
         , Html.table [ UI.cls "min-w-[20ch] table-auto border-spacing-y-2" ]
             [ Html.tbody []
-                [ Html.tr []
-                    [ Html.td [ UI.cls "pr-2" ] [ Html.text "💰 Chechtaky:" ]
-                    , Html.td [ UI.cls "text-right pl-[2ch]" ] [ Html.text (String.fromInt stats.ap) ]
-                    ]
-                , Html.tr []
-                    [ Html.td [ UI.cls "pr-2" ] [ Html.text "💶 Chechtaky/měsíc:" ]
-                    , Html.td [ UI.cls "text-right" ] [ Html.text (String.fromInt stats.apPerMonth) ]
-                    ]
-                , Html.tr []
-                    [ Html.td [ UI.cls "pr-2" ] [ Html.text "📈 Šance na dobru nahodu:" ]
-                    , Html.td [ UI.cls "text-right" ] [ Html.text (UI.float stats.gref) ]
-                    ]
-                , Html.tr []
-                    [ Html.td [ UI.cls "pr-2" ] [ Html.text "📉 Šance na špatnu nahodu:" ]
-                    , Html.td [ UI.cls "text-right" ] [ Html.text (UI.float stats.bref) ]
-                    ]
-                , Html.tr []
-                    [ Html.td [ UI.cls "pr-2" ] [ Html.text "⚽ BrankyBodyVteřiny:" ]
-                    , Html.td [ UI.cls "text-right" ] [ Html.text (String.fromInt stats.bbv) ]
-                    ]
-                , Html.tr []
-                    [ Html.td [ UI.cls "pr-2" ] [ Html.text "🏒 BrankyBodyVteřiny/měsíc:" ]
-                    , Html.td [ UI.cls "text-right" ] [ Html.text (String.fromInt stats.bbvPerMonth) ]
-                    ]
+                [ statRow "💰 Ch" "Chechtaky" (Html.text (String.fromInt stats.ap))
+                , statRow "💶 Ch/m" "Chechtaky/měsíc" (Html.text (String.fromInt stats.apPerMonth))
+                , statRow "📈 ŠD" "Šance na dobru nahodu" (Html.text (UI.float stats.gref))
+                , statRow "📉 ŠŠ" "Šance na špatnu nahodu" (Html.text (UI.float stats.bref))
+                , statRow "⚽ BBV" "BrankyBodyVteřiny" (Html.text (String.fromInt stats.bbv))
+                , statRow "🏒 BBV/m" "BrankyBodyVteřiny/měsíc" (Html.text (String.fromInt stats.bbvPerMonth))
                 ]
             ]
         ]
@@ -552,16 +549,16 @@ viewDelta delta =
         content =
             case delta of
                 AP n ->
-                    plusMinus n ++ String.fromInt (abs n) ++ " AP"
+                    plusMinus n ++ String.fromInt (abs n) ++ " Ch"
 
                 APPerMonth n ->
-                    plusMinus n ++ String.fromInt (abs n) ++ " AP/m"
+                    plusMinus n ++ String.fromInt (abs n) ++ " Ch/m"
 
                 GREF n ->
-                    plusMinus n ++ UI.float (abs n) ++ " GREF"
+                    plusMinus n ++ UI.float (abs n) ++ " ŠD"
 
                 BREF n ->
-                    plusMinus n ++ UI.float (abs n) ++ " BREF"
+                    plusMinus n ++ UI.float (abs n) ++ " ŠŠ"
 
                 BBV n ->
                     plusMinus n ++ String.fromInt (abs n) ++ " BBV"

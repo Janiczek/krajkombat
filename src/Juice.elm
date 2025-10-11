@@ -50,7 +50,8 @@ advanceMonthButtonTexts : ( String, List String )
 advanceMonthButtonTexts =
     ( "Nojo furt"
     , [ "Popojedem"
-      , "Nevim, další!"
+      , "Nevim, dalši!"
+      , "Sypej tam dalši"
       ]
     )
 

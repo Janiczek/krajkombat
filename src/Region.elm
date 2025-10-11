@@ -49,16 +49,21 @@ otherNames =
 
 generator : String -> Generator Region
 generator name =
+    let
+        resources : Resources
+        resources =
+            Resource.init
+    in
     Random.constant
         (\availableDecisions ->
             { name = name
-            , resources = Resource.init
+            , resources = resources
             , upgrades = AssocSet.empty
             , upgradesAvailable = []
             , availableDecisions = availableDecisions
             }
         )
-        |> Random.Extra.andMap Decision.listGenerator
+        |> Random.Extra.andMap (Decision.listGenerator resources)
 
 
 listGenerator : Int -> Generator (List Region)
@@ -70,17 +75,19 @@ listGenerator n =
 
 advanceMonth : Region -> Generator Region
 advanceMonth ({ resources } as region) =
+    let
+        newResources : Resources
+        newResources =
+            { resources
+                | ap = resources.ap + resources.apPerMonth
+                , bbv = resources.bbv + resources.bbvPerMonth
+            }
+    in
     Random.constant
         (\availableDecisions ->
             { region
-                | resources =
-                    { resources
-                        | ap = resources.ap + resources.apPerMonth
-                        , bbv = resources.bbv + resources.bbvPerMonth
-                    }
-                , availableDecisions =
-                    availableDecisions
-                        |> List.filter (Decision.canApplyDeltas resources)
+                | resources = newResources
+                , availableDecisions = availableDecisions
             }
         )
-        |> Random.Extra.andMap Decision.listGenerator
+        |> Random.Extra.andMap (Decision.listGenerator newResources)

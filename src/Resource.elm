@@ -60,6 +60,10 @@ canApplyDelta resources delta =
     let
         rule : number -> number -> Bool
         rule n resource =
+            let
+                _ =
+                    Debug.log "rule" ( n, resource, ( resource + n, resource + n >= 0 ) )
+            in
             resource + n >= 0
     in
     case delta of

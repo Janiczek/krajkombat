@@ -31,10 +31,11 @@ maxDecisionsPerMonth =
     10
 
 
-listGenerator : Generator (List Decision)
-listGenerator =
+listGenerator : Resources -> Generator (List Decision)
+listGenerator resources =
     Random.list maxDecisionsPerMonth decisionGenerator
         |> Random.map keepUniqueNames
+        |> Random.map (List.filter (canApplyDeltas resources))
 
 
 decisionGenerator : Generator Decision
