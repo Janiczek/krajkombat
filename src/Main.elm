@@ -33,6 +33,7 @@ type Msg
     | FinishIntro
       -- GameLoop
     | AdvanceMonth
+    | MakeDecision Game.Decision
       -- GameEnded
     | BackToMainMenu
 
@@ -86,43 +87,41 @@ update msg model =
             )
 
         AdvanceMonth ->
-            updateGameLoop model <|
+            withGameLoop model <|
                 \game ->
-                    if game.monthsLeft <= 0 then
-                        let
-                            ( newGame, newSeed ) =
-                                game
-                                    |> Game.advanceMonth model.randomSeed
+                    let
+                        ( newGame, newSeed ) =
+                            game
+                                |> Game.advanceMonth model.randomSeed
 
-                            results =
-                                newGame
-                                    |> Game.end
-                        in
-                        ( { model
-                            | gamePhase = Game.GameEnded results
-                            , randomSeed = newSeed
-                          }
-                        , Cmd.none
-                        )
+                        newModel : Model
+                        newModel =
+                            { model | randomSeed = newSeed }
+                                |> advanceJuice
 
-                    else
-                        let
-                            ( newGame, newSeed ) =
-                                game
-                                    |> Game.advanceMonth model.randomSeed
-                        in
-                        ( { model
-                            | gamePhase = Game.GameLoop newGame
-                            , randomSeed = newSeed
-                          }
-                            |> advanceJuice
-                        , Cmd.none
-                        )
+                        finalModel : Model
+                        finalModel =
+                            if game.monthsLeft <= 0 then
+                                let
+                                    results : Game.Results
+                                    results =
+                                        Game.end newGame
+                                in
+                                { newModel | gamePhase = Game.GameEnded results }
+
+                            else
+                                { newModel | gamePhase = Game.GameLoop newGame }
+                    in
+                    ( finalModel, Cmd.none )
 
         BackToMainMenu ->
             ( { model | gamePhase = Game.MainMenu }
             , Cmd.none
             )
+
+        MakeDecision decision ->
+            model
+                |> updateGameLoop (Game.MakeDecision decision)
 
 
 advanceJuice : Model -> Model
@@ -137,8 +136,17 @@ advanceJuice model =
     }
 
 
-updateGameLoop : Model -> (Game -> ( Model, Cmd Msg )) -> ( Model, Cmd Msg )
-updateGameLoop model f =
+updateGameLoop : Game.Msg -> Model -> ( Model, Cmd Msg )
+updateGameLoop msg model =
+    withGameLoop model <|
+        \game ->
+            ( { model | gamePhase = Game.GameLoop (Game.update msg game) }
+            , Cmd.none
+            )
+
+
+withGameLoop : Model -> (Game -> ( Model, Cmd Msg )) -> ( Model, Cmd Msg )
+withGameLoop model f =
     case model.gamePhase of
         Game.GameLoop game ->
             f game
@@ -245,14 +253,53 @@ viewGameLoop juice game =
 
 viewDecisions : List Game.Decision -> Html Msg
 viewDecisions decisions =
-    Html.ul []
-        (decisions |> List.map viewDecision)
+    Html.table [ UI.cls "min-w-fit" ]
+        (decisions |> List.map viewDecisionRow)
 
 
-viewDecision : Game.Decision -> Html Msg
-viewDecision decision =
-    Html.li []
-        [ Html.text decision.flavorText ]
+viewDecisionRow : Game.Decision -> Html Msg
+viewDecisionRow decision =
+    Html.tr []
+        [ Html.td [] [ Html.text decision.flavorText ]
+        , Html.td [ UI.cls "pl-[2ch]" ]
+            [ decision.deltas
+                |> List.map describeDelta
+                |> String.join ", "
+                |> Html.text
+            ]
+        , Html.td [ UI.cls "pl-[2ch]" ] [ UI.btn [ Html.Events.onClick (MakeDecision decision) ] "To chcu" ]
+        ]
+
+
+describeDelta : Game.ResourceDelta -> String
+describeDelta delta =
+    let
+        plusMinus : number -> String
+        plusMinus n =
+            if n >= 0 then
+                "+"
+
+            else
+                ""
+    in
+    case delta of
+        Game.AP n ->
+            plusMinus n ++ String.fromInt n ++ " AP"
+
+        Game.APPerMonth n ->
+            plusMinus n ++ String.fromInt n ++ " AP/m"
+
+        Game.GREF f ->
+            plusMinus f ++ Round.round 2 f ++ " GREF"
+
+        Game.BREF f ->
+            plusMinus f ++ Round.round 2 f ++ " BREF"
+
+        Game.BBV n ->
+            plusMinus n ++ String.fromInt n ++ " BBV"
+
+        Game.BBVPerMonth n ->
+            plusMinus n ++ String.fromInt n ++ " BBV/m"
 
 
 viewMonthStats : String -> Int -> Html Msg
@@ -323,7 +370,7 @@ viewRanking ranking =
                 [ Html.th [ UI.cls "text-left" ] [ Html.text "#" ]
                 , Html.th [ UI.cls "text-left" ] [ Html.text " " ]
                 , Html.th [ UI.cls "text-left" ] [ Html.text "Kraj" ]
-                , Html.th [ UI.cls "text-right" ] [ Html.text "BrankyBodyVteřiny" ]
+                , Html.th [ UI.cls "text-right pl-[2ch]" ] [ Html.text "BrankyBodyVteřiny" ]
                 ]
             ]
         , Html.tbody []
@@ -382,7 +429,7 @@ viewResources stats =
             [ Html.tbody []
                 [ Html.tr []
                     [ Html.td [ UI.cls "pr-2" ] [ Html.text "💰 Chechtaky:" ]
-                    , Html.td [ UI.cls "text-right" ] [ Html.text (String.fromInt stats.ap) ]
+                    , Html.td [ UI.cls "text-right pl-[2ch]" ] [ Html.text (String.fromInt stats.ap) ]
                     ]
                 , Html.tr []
                     [ Html.td [ UI.cls "pr-2" ] [ Html.text "💶 Chechtaky/měsíc:" ]
@@ -390,11 +437,11 @@ viewResources stats =
                     ]
                 , Html.tr []
                     [ Html.td [ UI.cls "pr-2" ] [ Html.text "📈 Šance na dobru nahodu:" ]
-                    , Html.td [ UI.cls "text-right" ] [ Html.text (Round.round 2 stats.gref) ]
+                    , Html.td [ UI.cls "text-right" ] [ Html.text (UI.float stats.gref) ]
                     ]
                 , Html.tr []
                     [ Html.td [ UI.cls "pr-2" ] [ Html.text "📉 Šance na špatnu nahodu:" ]
-                    , Html.td [ UI.cls "text-right" ] [ Html.text (Round.round 2 stats.bref) ]
+                    , Html.td [ UI.cls "text-right" ] [ Html.text (UI.float stats.bref) ]
                     ]
                 , Html.tr []
                     [ Html.td [ UI.cls "pr-2" ] [ Html.text "⚽ BrankyBodyVteřiny:" ]

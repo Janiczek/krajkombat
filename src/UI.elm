@@ -2,6 +2,7 @@ module UI exposing
     ( btn
     , cls
     , col
+    , float
     , heading
     , link
     , none
@@ -11,6 +12,7 @@ module UI exposing
 
 import Html exposing (Html)
 import Html.Attributes
+import Round
 
 
 cls : String -> Html.Attribute msg
@@ -80,3 +82,8 @@ section children =
     col
         [ cls "border border-gray-200 bg-gray-50 rounded-md p-2 shadow-sm" ]
         children
+
+
+float : Float -> String
+float n =
+    Round.round 2 n

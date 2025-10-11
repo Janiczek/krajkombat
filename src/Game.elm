@@ -2,12 +2,15 @@ module Game exposing
     ( Decision
     , DecisionType(..)
     , Game
+    , Msg(..)
     , Phase(..)
+    , ResourceDelta(..)
     , Results(..)
     , ResultsData
     , advanceMonth
     , end
     , gameInitGenerator
+    , update
     )
 
 import Dict
@@ -16,6 +19,10 @@ import Random exposing (Generator)
 import Random.Extra
 import Ranking exposing (Ranking)
 import Region exposing (Region)
+
+
+type Msg
+    = MakeDecision Decision
 
 
 type Phase
@@ -256,3 +263,10 @@ end game =
 
         [] ->
             Bug
+
+
+update : Msg -> Game -> Game
+update msg game =
+    case msg of
+        MakeDecision decision ->
+            Debug.todo "make decision"
