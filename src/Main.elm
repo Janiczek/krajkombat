@@ -464,19 +464,19 @@ viewDelta delta =
     in
     case delta of
         AP n ->
-            plusMinus n ++ String.fromInt n ++ " AP"
+            plusMinus n ++ String.fromInt (abs n) ++ " AP"
 
         APPerMonth n ->
-            plusMinus n ++ String.fromInt n ++ " AP/m"
+            plusMinus n ++ String.fromInt (abs n) ++ " AP/m"
 
         GREF n ->
-            plusMinus n ++ UI.float n ++ " GREF"
+            plusMinus n ++ UI.float (abs n) ++ " GREF"
 
         BREF n ->
-            plusMinus n ++ UI.float n ++ " BREF"
+            plusMinus n ++ UI.float (abs n) ++ " BREF"
 
         BBV n ->
-            plusMinus n ++ String.fromInt n ++ " BBV"
+            plusMinus n ++ String.fromInt (abs n) ++ " BBV"
 
         BBVPerMonth n ->
-            plusMinus n ++ String.fromInt n ++ " BBV/m"
+            plusMinus n ++ String.fromInt (abs n) ++ " BBV/m"
