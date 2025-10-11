@@ -801,7 +801,7 @@ viewBlackHatOperationModal model =
                                                 , Html.td []
                                                     [ UI.btn
                                                         [ Html.Events.onClick (SelectBlackHatTarget { regionName = rank.name }) ]
-                                                        "Čmajz!"
+                                                        ("Čmajz " ++ String.fromInt (Upgrade.blackHatAmount rank.bbv))
                                                     ]
                                                 ]
                                         )

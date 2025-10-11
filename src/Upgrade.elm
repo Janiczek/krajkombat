@@ -2,12 +2,14 @@ module Upgrade exposing
     ( BlackHatData
     , Upgrade(..)
     , advanceBlackHat
+    , blackHatAmount
     , chance
     , cost
     , description
     , initBlackHat
     , name
     , procButtonLabel
+    , resetBlackHat
     )
 
 import ResourceDelta exposing (ResourceDelta(..))
@@ -64,9 +66,19 @@ type alias BlackHatData =
 
 initBlackHat : BlackHatData
 initBlackHat =
+    { monthsUntilAvailable = 0 }
+
+
+resetBlackHat : BlackHatData
+resetBlackHat =
     { monthsUntilAvailable = 3 }
 
 
 advanceBlackHat : BlackHatData -> BlackHatData
 advanceBlackHat data =
     { data | monthsUntilAvailable = max 0 (data.monthsUntilAvailable - 1) }
+
+
+blackHatAmount : Int -> Int
+blackHatAmount bbv =
+    bbv // 2

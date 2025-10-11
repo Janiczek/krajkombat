@@ -203,7 +203,7 @@ applyBlackHatOperation { regionName } ({ you, others } as game) =
         Just other ->
             let
                 amount =
-                    other.resources.bbv // 2
+                    Upgrade.blackHatAmount other.resources.bbv
 
                 theirNewBbv =
                     other.resources.bbv - amount
@@ -218,7 +218,7 @@ applyBlackHatOperation { regionName } ({ you, others } as game) =
                 | you =
                     { you
                         | resources = { yourResources | bbv = yourNewBbv }
-                        , blackHatUpgrade = Just Upgrade.initBlackHat
+                        , blackHatUpgrade = Just Upgrade.resetBlackHat
                     }
                 , others =
                     others
