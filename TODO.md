@@ -55,6 +55,8 @@
 
 - [ ] job/... market with other regions?
 
+- [ ] graph: everybody's BBV and your projected one
+
 * micromanagement: -AP, -AP/mo, +GREF (zaručí okamžitý úspěch akce / vyřeší problém, ale za cenu tvého času)
 
 * time limit: 12 měsíců, ultimátní kolo KrajKombat ligy a výsledek podle BBV
