@@ -8,6 +8,7 @@ import Html.Attributes
 import Html.Events
 import Juice exposing (Juice)
 import List.Extra
+import Logo
 import Markdown
 import PluralRules
 import PluralRules.Cz
@@ -215,7 +216,8 @@ view : Model -> Browser.Document Msg
 view model =
     { title = title
     , body =
-        [ Html.div
+        [ viewBouncingLogo
+        , Html.div
             [ UI.cls "font-mono p-2 pt-8 flex justify-center" ]
             ([ viewGamePhase model
              , viewRandomEventsModal model
@@ -225,6 +227,11 @@ view model =
             )
         ]
     }
+
+
+viewBouncingLogo : Html Msg
+viewBouncingLogo =
+    Logo.logoMsk
 
 
 viewGamePhase : Model -> List (Html Msg)
@@ -352,14 +359,11 @@ viewGameLoop juice game =
                 game.monthsLeft
             ]
         , UI.row []
-            [ UI.section [ UI.cls "w-[60ch]" ]
-                [ UI.heading "Duležita rozhodnuti"
-                , if List.isEmpty game.you.availableDecisions then
-                    viewNoDecisions
+            [ if List.isEmpty game.you.availableDecisions then
+                viewNoDecisions
 
-                  else
-                    viewDecisions game.you.resources game.you.availableDecisions
-                ]
+              else
+                viewDecisions game.you.resources game.you.availableDecisions
             , UI.col [ UI.cls "w-[40ch]" ]
                 [ viewResources game.you.resources
                 , viewUpgrades game.you
@@ -375,7 +379,10 @@ viewGameLoop juice game =
 
 viewNoDecisions : Html Msg
 viewNoDecisions =
-    Html.text "Už neni o čem!"
+    UI.section [ UI.cls "w-[60ch]" ]
+        [ UI.heading "Duležita rozhodnuti"
+        , Html.text "Už neni o čem!"
+        ]
 
 
 viewDecisions : Resources -> List Decision -> Html Msg
@@ -395,7 +402,7 @@ viewDecisions yourResources decisions =
 
 viewDecisionsOfType : Resources -> ( Decision.Type, List Decision ) -> Html Msg
 viewDecisionsOfType yourResources ( decisionType, decisions ) =
-    UI.col []
+    UI.section []
         [ UI.heading (Decision.typeLabel decisionType)
         , Html.table []
             (decisions |> List.map (viewDecisionRow yourResources))
