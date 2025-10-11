@@ -551,13 +551,15 @@ viewGameLoop juice game =
               else
                 viewDecisions game.you.resources game.you.availableDecisions
             , UI.col [ UI.cls "w-[40ch]" ]
+                [ viewResources game.you.resources
+                , viewUpgrades game.you
+                ]
+            , UI.col [ UI.cls "w-[40ch]" ]
                 [ if game.you.dataAnalyticsUpgrade then
                     Html.Lazy.lazy BBVChart.view game.bbvHistory
 
                   else
                     UI.none
-                , viewResources game.you.resources
-                , viewUpgrades game.you
                 , UI.section []
                     [ UI.heading "KrajKombat - Průběžna tabulka"
                     , viewRanking ranking
@@ -655,13 +657,21 @@ viewDecisionRow yourResources decision =
 
 viewMonthStats : String -> Int -> Html Msg
 viewMonthStats advanceMonthButtonText monthsLeft =
+    let
+        buttonText =
+            if monthsLeft == 0 then
+                "Už to skonči, nemužu se na to divat! 🏁"
+
+            else
+                advanceMonthButtonText ++ " →"
+    in
     UI.row []
         -- TODO: as there are fewer and fewer months left, add text effects, change colors, add sweating, shaking (on hover?)
         -- TODO: random funny button text
         [ Html.text ("Zbývá měsíců: " ++ String.fromInt monthsLeft)
         , UI.btn
             [ Html.Events.onClick AdvanceMonth ]
-            (advanceMonthButtonText ++ " →")
+            buttonText
         ]
 
 

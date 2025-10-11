@@ -65,7 +65,7 @@ youWonMessageTexts : ( String, List String )
 youWonMessageTexts =
     ( "Fajně jak cyp!"
     , [ "To byla haluz jak cyp!"
-      , "Jiřik to byl fajront jak cyp!"
+      , "Jiřik, to byl fajront jak cyp!"
       , "Dobřes je zrušil!"
       ]
     )
