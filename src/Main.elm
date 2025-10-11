@@ -366,8 +366,9 @@ view model =
             [ viewBouncingLogo model
             , Html.div [ UI.cls "font-mono p-2 pt-8 flex justify-center" ]
                 ([ viewGamePhase model
-                 , viewRandomEventsModal model
-                 , viewBlackHatOperationModal model
+                 , [ viewRandomEventsModal model
+                   , viewBlackHatOperationModal model
+                   ]
                  ]
                     |> List.concat
                 )
@@ -633,7 +634,7 @@ viewDecisionRow yourResources decision =
         [ Html.td [ UI.cls "py-2" ]
             [ Html.div []
                 [ Html.div [ UI.cls "text-sm" ] [ flavorTextNode ]
-                , viewDeltas yourResources decision.deltas
+                , viewDeltas { isRandomEvent = False } yourResources decision.deltas
                 ]
             ]
         , Html.td [ UI.cls "pl-[2ch] text-right text-nowrap" ]
@@ -771,7 +772,7 @@ viewRanking ranking =
         [ Html.thead []
             [ Html.tr []
                 [ Html.th [ UI.cls "text-left" ] [ Html.text "#" ]
-                , Html.th [ UI.cls "text-left" ] [ Html.text " " ]
+                , Html.th [ UI.cls "text-left pl-[2ch]" ] [ Html.text " " ]
                 , Html.th [ UI.cls "text-left pl-[2ch]" ] [ Html.text "Kraj" ]
                 , Html.th [ UI.cls "text-right pl-[2ch]" ] [ Html.text "BBV" ]
                 ]
@@ -904,7 +905,7 @@ viewAvailableUpgrades region =
                                 ]
                                 "Sem s tim"
                             ]
-                        , viewDeltas region.resources cost
+                        , viewDeltas { isRandomEvent = False } region.resources cost
                         , Html.span [ UI.cls "text-sm" ] [ Html.text (Upgrade.description upgrade) ]
                         ]
                     ]
@@ -1007,70 +1008,78 @@ viewDelta { canApply } delta =
         [ Html.text content ]
 
 
-viewRandomEventsModal : Model -> List (Html Msg)
+viewRandomEventsModal : Model -> Html Msg
 viewRandomEventsModal model =
-    case model.gamePhase of
-        Game.MainMenu ->
-            []
+    let
+        ( isVisible, content ) =
+            case model.gamePhase of
+                Game.GameLoop game ->
+                    case game.you.randomEvents of
+                        [] ->
+                            ( False, [] )
 
-        Game.Intro ->
-            []
+                        currentEvent :: _ ->
+                            let
+                                headingText : String
+                                headingText =
+                                    -- TODO juice
+                                    if currentEvent.isGood then
+                                        "Dobra nahoda"
 
-        Game.GameEnded _ ->
-            []
+                                    else
+                                        "Špatna nahoda (a kurde)"
 
-        Game.GameLoop game ->
-            case game.you.randomEvents of
-                [] ->
-                    []
+                                buttonText : String
+                                buttonText =
+                                    if currentEvent.isGood then
+                                        "Tuž dobre no ni?"
 
-                currentEvent :: _ ->
-                    let
-                        headingText : String
-                        headingText =
-                            -- TODO juice
-                            if currentEvent.isGood then
-                                "Dobra nahoda"
+                                    else
+                                        "Oukej no"
+                            in
+                            ( True
+                            , [ UI.col [ UI.cls "gap-4" ]
+                                    [ UI.heading headingText
+                                    , Html.div []
+                                        [ Html.text currentEvent.flavorText ]
+                                    , if not (List.isEmpty currentEvent.deltas) then
+                                        viewDeltas
+                                            { isRandomEvent = True }
+                                            game.you.resources
+                                            currentEvent.deltas
 
-                            else
-                                "Špatna nahoda (a kurde)"
-
-                        buttonText : String
-                        buttonText =
-                            if currentEvent.isGood then
-                                "Tuž dobre no ni?"
-
-                            else
-                                "Oukej no"
-                    in
-                    [ UI.modal []
-                        [ UI.col [ UI.cls "gap-4" ]
-                            [ UI.heading headingText
-                            , Html.div []
-                                [ Html.text currentEvent.flavorText ]
-                            , if not (List.isEmpty currentEvent.deltas) then
-                                viewDeltas game.you.resources currentEvent.deltas
-
-                              else
-                                UI.none
-                            , UI.row [ UI.cls "justify-between items-center" ]
-                                [ UI.btn
-                                    [ Html.Events.onClick ApplyNextRandomEvent
-                                    , Html.Attributes.id modalButtonId
+                                      else
+                                        UI.none
+                                    , UI.row [ UI.cls "justify-between items-center" ]
+                                        [ UI.btn
+                                            [ Html.Events.onClick ApplyNextRandomEvent
+                                            , Html.Attributes.id modalButtonId
+                                            ]
+                                            buttonText
+                                        ]
                                     ]
-                                    buttonText
-                                ]
-                            ]
-                        ]
-                    ]
+                              ]
+                            )
+
+                Game.MainMenu ->
+                    ( False, [] )
+
+                Game.Intro ->
+                    ( False, [] )
+
+                Game.GameEnded _ ->
+                    ( False, [] )
+    in
+    UI.modal isVisible [] content
 
 
-viewDeltas : Resources -> List ResourceDelta -> Html Msg
-viewDeltas resources deltas =
+viewDeltas : { isRandomEvent : Bool } -> Resources -> List ResourceDelta -> Html Msg
+viewDeltas { isRandomEvent } resources deltas =
     let
         canApply : Bool
         canApply =
-            Resource.canApplyDeltas resources deltas
+            isRandomEvent
+                || Resource.canApplyDeltas resources deltas
     in
     Html.ul
         [ UI.cls "text-sm list-disc ml-6" ]
@@ -1079,60 +1088,64 @@ viewDeltas resources deltas =
         )
 
 
-viewBlackHatOperationModal : Model -> List (Html Msg)
+viewBlackHatOperationModal : Model -> Html Msg
 viewBlackHatOperationModal model =
-    if model.blackHatOperationInProgress then
-        case model.gamePhase of
-            Game.MainMenu ->
-                []
-
-            Game.Intro ->
-                []
-
-            Game.GameEnded _ ->
-                []
-
-            Game.GameLoop game ->
-                let
-                    ranking : Ranking
-                    ranking =
-                        Ranking.rank { you = game.you, others = game.others }
-                in
-                [ UI.modal []
-                    [ UI.col [ UI.cls "gap-4" ]
-                        [ UI.heading "Black Hat Operace"
-                        , Html.table [ UI.cls "w-full mb-4" ]
-                            [ Html.thead []
-                                [ Html.tr []
-                                    [ Html.th [ UI.cls "text-left pb-2" ] [ Html.text "Region" ]
-                                    , Html.th [ UI.cls "text-left" ] [ Html.text "Body" ]
-                                    , Html.th [] []
+    let
+        ( isVisible, content ) =
+            if model.blackHatOperationInProgress then
+                case model.gamePhase of
+                    Game.GameLoop game ->
+                        let
+                            ranking : Ranking
+                            ranking =
+                                Ranking.rank { you = game.you, others = game.others }
+                        in
+                        ( True
+                        , [ UI.col [ UI.cls "gap-4" ]
+                                [ UI.heading "Black Hat Operace"
+                                , Html.table [ UI.cls "w-full mb-4" ]
+                                    [ Html.thead []
+                                        [ Html.tr []
+                                            [ Html.th [ UI.cls "text-left pb-2" ] [ Html.text "Region" ]
+                                            , Html.th [ UI.cls "text-left" ] [ Html.text "Body" ]
+                                            , Html.th [] []
+                                            ]
+                                        ]
+                                    , Html.tbody []
+                                        (ranking
+                                            |> Ranking.toSimple
+                                            |> List.filter (\rank -> rank.name /= Region.youName)
+                                            |> List.map
+                                                (\rank ->
+                                                    Html.tr [ UI.mod "hover" "bg-blue-100" ]
+                                                        [ Html.td [] [ Html.text rank.name ]
+                                                        , Html.td [ UI.cls "text-right pr-2" ] [ Html.text (String.fromInt rank.bbv) ]
+                                                        , Html.td [ UI.cls "text-right" ]
+                                                            [ UI.btn
+                                                                [ Html.Events.onClick (SelectBlackHatTarget { regionName = rank.name }) ]
+                                                                ("Čmajz " ++ String.fromInt (Upgrade.blackHatAmount rank.bbv))
+                                                            ]
+                                                        ]
+                                                )
+                                        )
                                     ]
                                 ]
-                            , Html.tbody []
-                                (ranking
-                                    |> Ranking.toSimple
-                                    |> List.filter (\rank -> rank.name /= Region.youName)
-                                    |> List.map
-                                        (\rank ->
-                                            Html.tr [ UI.mod "hover" "bg-blue-100" ]
-                                                [ Html.td [] [ Html.text rank.name ]
-                                                , Html.td [ UI.cls "text-right pr-2" ] [ Html.text (String.fromInt rank.bbv) ]
-                                                , Html.td [ UI.cls "text-right" ]
-                                                    [ UI.btn
-                                                        [ Html.Events.onClick (SelectBlackHatTarget { regionName = rank.name }) ]
-                                                        ("Čmajz " ++ String.fromInt (Upgrade.blackHatAmount rank.bbv))
-                                                    ]
-                                                ]
-                                        )
-                                )
-                            ]
-                        ]
-                    ]
-                ]
+                          ]
+                        )
 
-    else
-        []
+                    Game.MainMenu ->
+                        ( False, [] )
+
+                    Game.Intro ->
+                        ( False, [] )
+
+                    Game.GameEnded _ ->
+                        ( False, [] )
+
+            else
+                ( False, [] )
+    in
+    UI.modal isVisible [] content
 
 
 viewAudioMuteButton : Bool -> Html Msg

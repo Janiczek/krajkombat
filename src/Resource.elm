@@ -32,25 +32,30 @@ init =
 
 applyDelta : ResourceDelta -> Resources -> Resources
 applyDelta delta resources =
+    let
+        f : Int -> Int -> Int
+        f a b =
+            max 0 (a + b)
+    in
     if canApplyDelta resources delta then
         case delta of
             AP n ->
-                { resources | ap = resources.ap + n }
+                { resources | ap = f resources.ap n }
 
             APPerMonth n ->
-                { resources | apPerMonth = resources.apPerMonth + n }
+                { resources | apPerMonth = f resources.apPerMonth n }
 
             GREF n ->
-                { resources | gref = resources.gref + n }
+                { resources | gref = f resources.gref n }
 
             BREF n ->
-                { resources | bref = resources.bref + n }
+                { resources | bref = f resources.bref n }
 
             BBV n ->
-                { resources | bbv = resources.bbv + n }
+                { resources | bbv = f resources.bbv n }
 
             BBVPerMonth n ->
-                { resources | bbvPerMonth = resources.bbvPerMonth + n }
+                { resources | bbvPerMonth = f resources.bbvPerMonth n }
 
     else
         resources
@@ -88,9 +93,9 @@ canApplyDeltas resources deltas =
     List.all (canApplyDelta resources) deltas
 
 
-applyDeltas : List ResourceDelta -> Resources -> Resources
-applyDeltas deltas resources =
-    if canApplyDeltas resources deltas then
+applyDeltas : { alwaysApply : Bool } -> List ResourceDelta -> Resources -> Resources
+applyDeltas { alwaysApply } deltas resources =
+    if alwaysApply || canApplyDeltas resources deltas then
         List.foldl applyDelta resources deltas
 
     else

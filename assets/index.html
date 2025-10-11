@@ -18,6 +18,29 @@
             --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
             --font-handwriting: "Covered By Your Grace", cursive;
         }
+        
+        /* Modal transition animations */
+        .modal-backdrop {
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
+        }
+        
+        .modal-backdrop.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal-content {
+            opacity: 0;
+            transform: scale(0.9) translateY(1rem);
+            transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+        }
+        
+        .modal-backdrop.show .modal-content {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
     </style>
 </head>
 

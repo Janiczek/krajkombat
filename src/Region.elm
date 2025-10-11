@@ -166,7 +166,7 @@ applyDecision decision region =
         newResources : Resource.Resources
         newResources =
             region.resources
-                |> Resource.applyDeltas decision.deltas
+                |> Resource.applyDeltas { alwaysApply = False } decision.deltas
 
         newAvailableDecisions : List Decision
         newAvailableDecisions =
@@ -208,7 +208,7 @@ buyUpgrade upgrade region =
     if Resource.canApplyDeltas region.resources cost then
         { region
             | upgradesAvailable = region.upgradesAvailable |> List.filter (\u -> u /= upgrade)
-            , resources = region.resources |> Resource.applyDeltas cost
+            , resources = region.resources |> Resource.applyDeltas { alwaysApply = False } cost
         }
             |> initializeUpgrade upgrade
 

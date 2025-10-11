@@ -289,7 +289,7 @@ applyNextRandomEvent ({ you } as game) =
                 newResources : Resource.Resources
                 newResources =
                     you.resources
-                        |> Resource.applyDeltas currentEvent.deltas
+                        |> Resource.applyDeltas { alwaysApply = True } currentEvent.deltas
 
                 newYou : Region
                 newYou =
