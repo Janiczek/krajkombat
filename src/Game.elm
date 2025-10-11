@@ -68,6 +68,55 @@ gameInitGenerator =
         |> Random.Extra.andMap (Region.listGenerator otherRegionsCount)
 
 
+makeAIDecisions : Region -> Generator Region
+makeAIDecisions aiRegion =
+    let
+        boolListGenerator : Generator (List Bool)
+        boolListGenerator =
+            Random.list (List.length aiRegion.availableDecisions) Random.Extra.bool
+    in
+    boolListGenerator
+        |> Random.map
+            (\bools ->
+                let
+                    selectedDecisions : List Decision
+                    selectedDecisions =
+                        List.map2 Tuple.pair bools aiRegion.availableDecisions
+                            |> List.filterMap
+                                (\( takeIt, d ) ->
+                                    if takeIt then
+                                        Just d
+
+                                    else
+                                        Nothing
+                                )
+                in
+                if List.isEmpty selectedDecisions then
+                    aiRegion
+
+                else
+                    List.foldl applyDecision aiRegion selectedDecisions
+            )
+
+
+applyDecision : Decision -> Region -> Region
+applyDecision decision region =
+    let
+        newResources : Resource.Resources
+        newResources =
+            Decision.applyDeltas decision region.resources
+
+        newAvailableDecisions : List Decision
+        newAvailableDecisions =
+            region.availableDecisions
+                |> List.filter (\d -> d.flavorText /= decision.flavorText)
+    in
+    { region
+        | resources = newResources
+        , availableDecisions = newAvailableDecisions
+    }
+
+
 advanceMonth : Game -> Generator Game
 advanceMonth game =
     Random.constant
@@ -79,7 +128,11 @@ advanceMonth game =
             }
         )
         |> Random.Extra.andMap (Region.advanceMonth game.you)
-        |> Random.Extra.andMap (Random.Extra.traverse Region.advanceMonth game.others)
+        |> Random.Extra.andMap
+            (game.others
+                |> Random.Extra.traverse makeAIDecisions
+                |> Random.andThen (Random.Extra.traverse Region.advanceMonth)
+            )
 
 
 end : Game -> Results
@@ -124,12 +177,6 @@ makeDecision decision ({ you } as game) =
     let
         updatedYou : Region
         updatedYou =
-            { you
-                | resources = List.foldl Resource.applyDelta you.resources decision.deltas
-                , availableDecisions =
-                    game.you.availableDecisions
-                        -- this works because we made the names unique in the generator
-                        |> List.filter (\d -> d.flavorText /= decision.flavorText)
-            }
+            applyDecision decision you
     in
     { game | you = updatedYou }

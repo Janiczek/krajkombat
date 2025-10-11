@@ -1,6 +1,7 @@
 module Decision exposing
     ( Decision
     , DecisionType(..)
+    , applyDeltas
     , canApplyDeltas
     , listGenerator
     )
@@ -239,3 +240,12 @@ keepUniqueNames decisions =
 canApplyDeltas : Resources -> Decision -> Bool
 canApplyDeltas resources decision =
     List.all (Resource.canApplyDelta resources) decision.deltas
+
+
+applyDeltas : Decision -> Resources -> Resources
+applyDeltas decision resources =
+    if canApplyDeltas resources decision then
+        List.foldl Resource.applyDelta resources decision.deltas
+
+    else
+        resources

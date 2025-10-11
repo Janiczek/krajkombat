@@ -6,7 +6,7 @@
 
 - [ ] visuals: you in your office (Kenney?)
 
-- [ ] game loop of monthly decision making time
+- [x] game loop of monthly decision making time
 - [ ] game loop: showing new urgencies after some decisions
 - [ ] game loop: urgency fail consequences
 
@@ -20,10 +20,10 @@
 - [ ] urgency list (+ their deadlines / months remaining before they blow up)
 - [ ] available upgrades list (and after how many months they disappear - you've had your chance)
 
-- [ ] other regions' resources (same types as yours)
+- [x] other regions' resources (same types as yours)
 
-- [ ] random list of investments for this month
-- [ ] random list of preventions for this month
+- [x] random list of investments for this month
+- [x] random list of preventions for this month
 - [ ] random list of urgencies (and when they're revealed in this month)
 - [ ] random list of president bribe opportunities (chance proportional to BBV or relative region ranking)
 - [ ] random list of random events for this month
@@ -32,10 +32,10 @@
       - [ ] unlocked via investments
       - [ ] unlocked via the president (chance is proportional to BBV or relative region ranking)
 
-- [ ] other regions' random decisions
+- [x] other regions' random decisions
 
-- [ ] game end: victory
-- [ ] game end: game over
+- [x] game end: victory
+- [x] game end: game over
 
 - [ ] music
 - [ ] sound fx
