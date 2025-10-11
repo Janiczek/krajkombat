@@ -482,7 +482,7 @@ viewRanking ranking =
                                         rowCls : Html.Attribute Msg
                                         rowCls =
                                             if isYou then
-                                                UI.cls "font-bold bg-yellow-50"
+                                                UI.cls "font-bold"
 
                                             else
                                                 UI.cls ""
