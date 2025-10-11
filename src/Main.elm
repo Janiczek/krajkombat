@@ -28,6 +28,7 @@ type alias Model =
     , juice : Juice
     , randomSeed : Random.Seed
     , blackHatOperationInProgress : Bool
+    , hasMusic : Bool
     }
 
 
@@ -47,6 +48,8 @@ type Msg
     | ApplyNextRandomEvent
       -- GameEnded
     | BackToMainMenu
+      -- Other
+    | ToggleMusic
 
 
 main : Program Flags Model Msg
@@ -73,6 +76,7 @@ init flags =
       , juice = juice
       , randomSeed = newSeed
       , blackHatOperationInProgress = False
+      , hasMusic = False
       }
     , Cmd.none
     )
@@ -82,7 +86,10 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         StartGame ->
-            ( { model | gamePhase = Game.Intro }
+            ( { model
+                | gamePhase = Game.Intro
+                , hasMusic = True
+              }
             , Cmd.none
             )
 
@@ -155,6 +162,11 @@ update msg model =
             model
                 |> updateGameLoop (Game.BuyUpgrade upgrade)
 
+        ToggleMusic ->
+            ( { model | hasMusic = not model.hasMusic }
+            , Cmd.none
+            )
+
 
 advanceJuice : Model -> Model
 advanceJuice model =
@@ -204,7 +216,7 @@ view model =
     , body =
         [ Html.div
             [ UI.cls "font-mono p-2 pt-8 flex justify-center" ]
-            ([ viewGamePhase model.juice model.gamePhase
+            ([ viewGamePhase model
              , viewRandomEventsModal model
              , viewBlackHatOperationModal model
              ]
@@ -214,20 +226,29 @@ view model =
     }
 
 
-viewGamePhase : Juice -> Game.Phase -> List (Html Msg)
-viewGamePhase juice phase =
-    case phase of
+viewGamePhase : Model -> List (Html Msg)
+viewGamePhase model =
+    case model.gamePhase of
         Game.MainMenu ->
             viewMainMenu
 
         Game.Intro ->
-            viewIntro juice
+            viewIntro model.juice
+                |> withMusic model
 
         Game.GameLoop game ->
-            viewGameLoop juice game
+            viewGameLoop model.juice game
+                |> withMusic model
 
         Game.GameEnded results ->
-            viewGameEnded juice results
+            viewGameEnded model.juice results
+                |> withMusic model
+
+
+withMusic : Model -> List (Html Msg) -> List (Html Msg)
+withMusic model content =
+    viewAudioMuteButton model.hasMusic
+        :: content
 
 
 viewMainMenu : List (Html Msg)
@@ -811,3 +832,30 @@ viewBlackHatOperationModal model =
 
     else
         []
+
+
+viewAudioMuteButton : Bool -> Html Msg
+viewAudioMuteButton hasMusic =
+    Html.button
+        [ Html.Events.onClick ToggleMusic
+        , UI.cls "absolute top-1 right-1 z-100 p-2 opacity-50 text-2xl"
+        , UI.mod "hover" "opacity-100"
+        ]
+        [ Html.text
+            (if hasMusic then
+                "🔇"
+
+             else
+                "🔊"
+            )
+        , if hasMusic then
+            Html.audio
+                [ UI.cls "hidden"
+                , Html.Attributes.autoplay True
+                , Html.Attributes.loop True
+                ]
+                [ Html.source [ Html.Attributes.src "music.mp3" ] [] ]
+
+          else
+            UI.none
+        ]
