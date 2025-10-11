@@ -158,13 +158,13 @@ decisionContentGenerator type_ =
     (case type_ of
         Investment ->
             Random.uniform
-                ( "Nová lepší sekretářka", [ sub 5 20 AP, add 2 5 APPerMonth ] )
+                ( "Nova lepši sekretařka", [ sub 5 20 AP, add 2 5 APPerMonth ] )
                 [ ( "TODO", [ sub 15 30 AP, add 4 10 APPerMonth ] )
                 ]
 
         InvestmentLongTerm ->
             Random.uniform
-                ( "TODO", [ sub 5 10 APPerMonth, addF 0.01 0.05 GREF ] )
+                ( "Dustojne platy učitelu", [ sub 5 10 APPerMonth, addF 0.01 0.05 GREF ] )
                 []
 
         Prevention ->
@@ -272,4 +272,14 @@ update : Msg -> Game -> Game
 update msg game =
     case msg of
         MakeDecision decision ->
-            Debug.todo "make decision"
+            makeDecision decision game
+
+
+makeDecision : Decision -> Game -> Game
+makeDecision decision game =
+    { game
+        | availableDecisions =
+            game.availableDecisions
+                -- this works because we made the names unique in the generator
+                |> List.filter (\d -> d.flavorText /= decision.flavorText)
+    }
