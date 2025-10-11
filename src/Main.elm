@@ -225,23 +225,23 @@ viewGameLoop juice game =
         ranking =
             Ranking.rank { you = game.you, others = game.others }
     in
-    [ UI.col [ UI.cls "w-fit" ]
+    [ UI.col []
         [ UI.row [ UI.cls "justify-center" ]
             [ viewMonthStats
                 juice.advanceMonthButtonText
                 game.monthsLeft
             ]
         , UI.row []
-            [ UI.section
+            [ UI.section [ UI.cls "w-[60ch]" ]
                 [ UI.heading "Duležita rozhodnuti"
                 , viewDecisions game.availableDecisions
                 ]
-            , UI.col []
-                [ UI.section
-                    [ UI.heading Region.youName
+            , UI.col [ UI.cls "w-[40ch]" ]
+                [ UI.section []
+                    [ UI.heading ("Tvuj tym: " ++ Region.youName ++ "!")
                     , viewYourStats game.you
                     ]
-                , UI.section
+                , UI.section []
                     [ UI.heading "KrajKombat - Průběžna tabulka"
                     , viewRanking ranking
                     ]
@@ -253,7 +253,7 @@ viewGameLoop juice game =
 
 viewDecisions : List Game.Decision -> Html Msg
 viewDecisions decisions =
-    Html.table [ UI.cls "min-w-fit" ]
+    Html.table []
         (decisions |> List.map viewDecisionRow)
 
 
@@ -267,7 +267,7 @@ viewDecisionRow decision =
                 |> String.join ", "
                 |> Html.text
             ]
-        , Html.td [ UI.cls "pl-[2ch]" ]
+        , Html.td [ UI.cls "pl-[2ch] text-right" ]
             [ UI.btn
                 [ Html.Events.onClick (MakeDecision decision) ]
                 "To chcu"
@@ -368,13 +368,13 @@ ordinal n =
 
 viewRanking : Ranking -> Html Msg
 viewRanking ranking =
-    Html.table [ UI.cls "max-w-fit table-auto" ]
+    Html.table [ UI.cls "table-auto" ]
         [ Html.thead []
             [ Html.tr []
                 [ Html.th [ UI.cls "text-left" ] [ Html.text "#" ]
                 , Html.th [ UI.cls "text-left" ] [ Html.text " " ]
-                , Html.th [ UI.cls "text-left" ] [ Html.text "Kraj" ]
-                , Html.th [ UI.cls "text-right pl-[2ch]" ] [ Html.text "BrankyBodyVteřiny" ]
+                , Html.th [ UI.cls "text-left pl-[2ch]" ] [ Html.text "Kraj" ]
+                , Html.th [ UI.cls "text-right pl-[2ch]" ] [ Html.text "BBV" ]
                 ]
             ]
         , Html.tbody []
@@ -407,9 +407,9 @@ viewRanking ranking =
                                     in
                                     Html.tr [ rowCls ]
                                         [ Html.td [] [ Html.text ordinalText ]
-                                        , Html.td [ UI.cls "text-xl" ] [ Html.text (medalForRank rank) ]
-                                        , Html.td [] [ Html.text name ]
-                                        , Html.td [ UI.cls "text-right" ] [ Html.text (String.fromInt bbv) ]
+                                        , Html.td [ UI.cls "pl-[2ch] text-xl" ] [ Html.text (medalForRank rank) ]
+                                        , Html.td [ UI.cls "pl-[2ch]" ] [ Html.text name ]
+                                        , Html.td [ UI.cls "pl-[2ch] text-right" ] [ Html.text (String.fromInt bbv) ]
                                         ]
                                 )
                     )

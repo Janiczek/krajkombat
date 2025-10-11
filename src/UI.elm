@@ -77,10 +77,10 @@ link href label =
         [ Html.text label ]
 
 
-section : List (Html msg) -> Html msg
-section children =
+section : List (Html.Attribute msg) -> List (Html msg) -> Html msg
+section attrs children =
     col
-        [ cls "border border-gray-200 bg-gray-50 rounded-md p-2 shadow-sm" ]
+        (attrs ++ [ cls "border border-gray-200 bg-gray-50 rounded-md p-2 shadow-sm" ])
         children
 
 
