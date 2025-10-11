@@ -35,7 +35,7 @@ btn : List (Html.Attribute msg) -> String -> Html msg
 btn attrs label =
     Html.button
         ([ attrs
-         , [ cls "bg-blue-500 text-white px-[1ch] rounded-md w-fit shadow-sm"
+         , [ cls "bg-blue-500 text-white px-[1ch] rounded-md w-fit shadow-sm transition-shadow"
            , mod "hover" "bg-blue-400 shadow-md cursor-pointer"
            , mod "active" "bg-blue-500 shadow-inner translate-y-[2px]"
            ]
