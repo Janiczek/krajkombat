@@ -43,6 +43,9 @@
 - [ ] sound fx
 - [ ] jrpg style graphics?
 
+- [ ] others: use upgrades too
+- [x] upgrades: disable buy button if can't buy
+
 
 * random eventy:
   * +AP

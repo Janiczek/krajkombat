@@ -18,6 +18,7 @@ import RandomEvent
 import Ranking exposing (Ranking)
 import Region exposing (Region)
 import Resource exposing (Resources)
+import Upgrade exposing (Upgrade)
 
 
 type Msg
@@ -25,6 +26,7 @@ type Msg
     | DiscardDecision Decision
     | ApplyNextRandomEvent
     | ApplyBlackHatOperation { regionName : String }
+    | BuyUpgrade Upgrade
 
 
 type Phase
@@ -180,6 +182,14 @@ update msg game =
 
         ApplyBlackHatOperation regionName ->
             applyBlackHatOperation regionName game
+
+        BuyUpgrade upgrade ->
+            buyUpgrade upgrade game
+
+
+buyUpgrade : Upgrade -> Game -> Game
+buyUpgrade upgrade ({ you } as game) =
+    { game | you = you |> Region.buyUpgrade upgrade }
 
 
 applyBlackHatOperation : { regionName : String } -> Game -> Game

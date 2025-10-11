@@ -1,4 +1,4 @@
-module Ranking exposing (Ranking, rank)
+module Ranking exposing (Ranking, rank, toSimple)
 
 
 type alias Ranking =
@@ -92,3 +92,18 @@ rank { you, others } =
                         [ r ]
             )
             []
+
+
+toSimple : Ranking -> List { name : String, bbv : Int }
+toSimple ranking =
+    ranking
+        |> List.concatMap
+            (\r ->
+                r.names
+                    |> List.map
+                        (\name ->
+                            { name = name
+                            , bbv = r.bbv
+                            }
+                        )
+            )

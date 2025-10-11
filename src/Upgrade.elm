@@ -1,4 +1,4 @@
-module Upgrade exposing (Upgrade(..), cost, description, name, procButtonLabel)
+module Upgrade exposing (Upgrade(..), chance, cost, description, name, procButtonLabel)
 
 import ResourceDelta exposing (ResourceDelta(..))
 
@@ -38,4 +38,11 @@ procButtonLabel : Upgrade -> String
 procButtonLabel upgrade =
     case upgrade of
         BlackHatBootcamp ->
-            "Maňa zas se tam naburej"
+            "Maňa do toho"
+
+
+chance : Upgrade -> Float
+chance upgrade =
+    case upgrade of
+        BlackHatBootcamp ->
+            0.4

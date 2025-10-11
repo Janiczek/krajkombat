@@ -4,6 +4,7 @@ module Region exposing
     , applyDecision
     , applyRandomEvent
     , applyRandomEvents
+    , buyUpgrade
     , discardDecision
     , hasAvailableUpgrades
     , hasPurchasedUpgrades
@@ -18,7 +19,8 @@ import Random.Extra
 import Random.List
 import RandomEvent exposing (RandomEvent)
 import Resource exposing (Resources)
-import Upgrade exposing (Upgrade)
+import ResourceDelta exposing (ResourceDelta)
+import Upgrade exposing (Upgrade(..))
 
 
 type alias Region =
@@ -92,7 +94,22 @@ advanceMonth ({ resources } as region) =
             }
     in
     Random.constant
-        (\availableDecisions randomEvents ->
+        (\availableDecisions randomEvents addBlackHatUpgrade ->
+            let
+                addedUpgrades : List Upgrade
+                addedUpgrades =
+                    [ if
+                        addBlackHatUpgrade
+                            && (region.blackHatUpgrade == Nothing)
+                            && not (List.member BlackHatBootcamp region.upgradesAvailable)
+                      then
+                        Just BlackHatBootcamp
+
+                      else
+                        Nothing
+                    ]
+                        |> List.filterMap identity
+            in
             { region
                 | resources = newResources
                 , availableDecisions = availableDecisions
@@ -103,10 +120,19 @@ advanceMonth ({ resources } as region) =
                             (\{ monthsUntilAvailable } ->
                                 { monthsUntilAvailable = max 0 (monthsUntilAvailable - 1) }
                             )
+                , upgradesAvailable =
+                    region.upgradesAvailable ++ addedUpgrades
             }
         )
         |> Random.Extra.andMap (Decision.listGenerator newResources)
         |> Random.Extra.andMap (RandomEvent.listGenerator newResources)
+        |> Random.Extra.andMap (upgradeChanceGenerator BlackHatBootcamp)
+
+
+upgradeChanceGenerator : Upgrade -> Generator Bool
+upgradeChanceGenerator upgrade =
+    Random.float 0 1
+        |> Random.map (\chance -> chance < Upgrade.chance upgrade)
 
 
 applyRandomEvent : RandomEvent -> Region -> Region
@@ -160,3 +186,28 @@ hasPurchasedUpgrades region =
 hasAvailableUpgrades : Region -> Bool
 hasAvailableUpgrades region =
     not (List.isEmpty region.upgradesAvailable)
+
+
+buyUpgrade : Upgrade -> Region -> Region
+buyUpgrade upgrade region =
+    let
+        cost : List ResourceDelta
+        cost =
+            Upgrade.cost upgrade
+    in
+    if Resource.canApplyDeltas region.resources cost then
+        { region
+            | upgradesAvailable = region.upgradesAvailable |> List.filter (\u -> u /= upgrade)
+            , resources = region.resources |> Resource.applyDeltas cost
+        }
+            |> initializeUpgrade upgrade
+
+    else
+        region
+
+
+initializeUpgrade : Upgrade -> Region -> Region
+initializeUpgrade upgrade region =
+    case upgrade of
+        BlackHatBootcamp ->
+            { region | blackHatUpgrade = Just { monthsUntilAvailable = 3 } }

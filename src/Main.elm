@@ -8,6 +8,8 @@ import Html.Attributes
 import Html.Events
 import Juice exposing (Juice)
 import List.Extra
+import PluralRules
+import PluralRules.Cz
 import Random
 import Ranking exposing (Ranking)
 import Region exposing (Region)
@@ -40,6 +42,7 @@ type Msg
     | DiscardDecision Decision
     | StartBlackHatOperation
     | SelectBlackHatTarget { regionName : String }
+    | BuyUpgrade Upgrade
       -- Random Events Modal
     | ApplyNextRandomEvent
       -- GameEnded
@@ -147,6 +150,10 @@ update msg model =
         SelectBlackHatTarget regionName ->
             model
                 |> updateGameLoop (Game.ApplyBlackHatOperation regionName)
+
+        BuyUpgrade upgrade ->
+            model
+                |> updateGameLoop (Game.BuyUpgrade upgrade)
 
 
 advanceJuice : Model -> Model
@@ -271,8 +278,7 @@ viewGameLoop juice game =
                     viewDecisions game.you.resources game.you.availableDecisions
                 ]
             , UI.col [ UI.cls "w-[40ch]" ]
-                [ UI.heading <| "Tvuj tym: " ++ Region.youName ++ "!"
-                , viewResources game.you.resources
+                [ viewResources game.you.resources
                 , viewUpgrades game.you
                 , UI.section []
                     [ UI.heading "KrajKombat - Průběžna tabulka"
@@ -348,10 +354,7 @@ viewDecisionRow yourResources decision =
         [ Html.td [ UI.cls "py-2" ]
             [ Html.div []
                 [ Html.div [] [ flavorTextNode ]
-                , Html.ul [ UI.cls ("text-sm " ++ deltaClass) ]
-                    (decision.deltas
-                        |> List.map (\delta -> Html.li [] [ viewDelta { canApply = canApply } delta ])
-                    )
+                , viewDeltas decision.deltas
                 ]
             ]
         , Html.td [ UI.cls "pl-[2ch] text-right text-nowrap" ]
@@ -503,7 +506,8 @@ viewResources stats =
                 ]
     in
     UI.section []
-        [ UI.heading "Kasa:"
+        [ UI.heading <| "Tvuj tym: " ++ Region.youName ++ "!"
+        , UI.heading "Kasa:"
         , Html.table [ UI.cls "min-w-[20ch] table-auto border-spacing-y-2" ]
             [ Html.tbody []
                 [ statRow "💰 Chechtaky" (String.fromInt stats.ap)
@@ -514,6 +518,19 @@ viewResources stats =
                 , statRow "🏒 BrankyBodyVteřiny/měsíc" (String.fromInt stats.bbvPerMonth)
                 ]
             ]
+        ]
+
+
+pluralRules : PluralRules.Rules
+pluralRules =
+    PluralRules.fromList
+        [ ( "měsíc"
+          , [ ( PluralRules.One, "měsíc" )
+            , ( PluralRules.Few, "měsíce" ) -- 2..4
+            , ( PluralRules.Many, "měsíců" )
+            , ( PluralRules.Other, "měsíců" )
+            ]
+          )
         ]
 
 
@@ -528,24 +545,58 @@ viewUpgrades region =
                         []
 
                     Just { monthsUntilAvailable } ->
-                        if monthsUntilAvailable <= 0 then
-                            [ Html.li []
-                                [ Html.text (Upgrade.name BlackHatBootcamp)
-                                , UI.btn
+                        [ Html.li [ UI.cls "flex justify-between" ]
+                            [ Html.text (Upgrade.name BlackHatBootcamp)
+                            , if monthsUntilAvailable <= 0 then
+                                UI.btn
                                     [ Html.Events.onClick StartBlackHatOperation ]
                                     (Upgrade.procButtonLabel BlackHatBootcamp)
-                                ]
-                            ]
 
-                        else
-                            []
+                              else
+                                UI.btn
+                                    [ Html.Attributes.disabled True ]
+                                    ("Vydrž "
+                                        ++ String.fromInt monthsUntilAvailable
+                                        ++ " "
+                                        ++ PluralRules.Cz.pluralize pluralRules monthsUntilAvailable "měsíc"
+                                    )
+                            ]
+                        ]
+                 , viewAvailableUpgrades region
                  ]
                     |> List.concat
                 )
 
           else
-            Html.text "Zatím žádne"
+            Html.text "Zatím žádne..."
         ]
+
+
+viewAvailableUpgrades : Region -> List (Html Msg)
+viewAvailableUpgrades region =
+    region.upgradesAvailable
+        |> List.map
+            (\upgrade ->
+                let
+                    cost : List ResourceDelta
+                    cost =
+                        Upgrade.cost upgrade
+                in
+                Html.li []
+                    [ UI.col []
+                        [ UI.row [ UI.cls "justify-between" ]
+                            [ Html.span [] [ Html.text (Upgrade.name upgrade) ]
+                            , UI.btn
+                                [ Html.Events.onClick (BuyUpgrade upgrade)
+                                , Html.Attributes.disabled (not (Resource.canApplyDeltas region.resources cost))
+                                ]
+                                "Sem s tim"
+                            ]
+                        , viewDeltas cost
+                        , Html.span [ UI.cls "text-sm" ] [ Html.text (Upgrade.description upgrade) ]
+                        ]
+                    ]
+            )
 
 
 type Nature
@@ -686,10 +737,7 @@ viewRandomEventsModal model =
                             , Html.div []
                                 [ Html.text currentEvent.flavorText ]
                             , if not (List.isEmpty currentEvent.deltas) then
-                                Html.ul [ UI.cls "text-sm list-disc ml-6" ]
-                                    (currentEvent.deltas
-                                        |> List.map (\delta -> Html.li [] [ viewDelta { canApply = True } delta ])
-                                    )
+                                viewDeltas currentEvent.deltas
 
                               else
                                 UI.none
@@ -701,6 +749,14 @@ viewRandomEventsModal model =
                             ]
                         ]
                     ]
+
+
+viewDeltas : List ResourceDelta -> Html Msg
+viewDeltas deltas =
+    Html.ul [ UI.cls "text-sm list-disc ml-6" ]
+        (deltas
+            |> List.map (\delta -> Html.li [] [ viewDelta { canApply = True } delta ])
+        )
 
 
 viewBlackHatOperationModal : Model -> List (Html Msg)
@@ -725,35 +781,28 @@ viewBlackHatOperationModal model =
                 [ UI.modal []
                     [ UI.col [ UI.cls "gap-4" ]
                         [ UI.heading "Black Hat Operace"
-                        , Html.table [ UI.cls "w-full mb-4 text-sm" ]
+                        , Html.table [ UI.cls "w-full mb-4" ]
                             [ Html.thead []
                                 [ Html.tr []
-                                    [ Html.th [] [ Html.text "Region" ]
-                                    , Html.th [] [ Html.text "Body" ]
+                                    [ Html.th [ UI.cls "text-left pb-2" ] [ Html.text "Region" ]
+                                    , Html.th [ UI.cls "text-left" ] [ Html.text "Body" ]
+                                    , Html.th [] []
                                     ]
                                 ]
                             , Html.tbody []
                                 (ranking
-                                    |> List.filter (\rank -> not (List.member Region.youName rank.names))
+                                    |> Ranking.toSimple
+                                    |> List.filter (\rank -> rank.name /= Region.youName)
                                     |> List.map
                                         (\rank ->
-                                            Html.tr []
-                                                [ Html.td [] [ Html.text (ordinal rank.rank) ]
+                                            Html.tr [ UI.mod "hover" "bg-blue-50" ]
+                                                [ Html.td [] [ Html.text rank.name ]
+                                                , Html.td [ UI.cls "text-right pr-2" ] [ Html.text (String.fromInt rank.bbv) ]
                                                 , Html.td []
-                                                    [ UI.col []
-                                                        (rank.names
-                                                            |> List.map
-                                                                (\regionName ->
-                                                                    UI.row []
-                                                                        [ UI.btn
-                                                                            [ Html.Events.onClick (SelectBlackHatTarget { regionName = regionName }) ]
-                                                                            "Čmajz!"
-                                                                        , Html.text regionName
-                                                                        ]
-                                                                )
-                                                        )
+                                                    [ UI.btn
+                                                        [ Html.Events.onClick (SelectBlackHatTarget { regionName = rank.name }) ]
+                                                        "Čmajz!"
                                                     ]
-                                                , Html.td [] [ Html.text (String.fromInt rank.bbv) ]
                                                 ]
                                         )
                                 )
