@@ -70,6 +70,7 @@ youLostMessageTexts =
     ( "Tak si chuj?"
     , [ "Ty si kus cypa!"
       , "Prohrals kamo!"
+      , "Šecko zdupane!"
       ]
     )
 
@@ -78,5 +79,6 @@ youLostByDrawMessageTexts : ( String, List String )
 youLostByDrawMessageTexts =
     ( "Jak se musiš dělit tak chuj s tym! Přiště lepi!"
     , [ "Prohrals kamo bo plichta je nanic!"
+      , "Ale lepši by bylo aby oni byli druzi, nu ni?"
       ]
     )

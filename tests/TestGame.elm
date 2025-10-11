@@ -24,7 +24,6 @@ suite =
                                 , createRegion "Brno" 90
                                 ]
                             , monthsLeft = 0
-                            , availableDecisions = []
                             }
 
                         result : Results
@@ -48,7 +47,6 @@ suite =
                                 , createRegion "Brno" 90
                                 ]
                             , monthsLeft = 0
-                            , availableDecisions = []
                             }
 
                         result : Results
@@ -72,7 +70,6 @@ suite =
                                 , createRegion "Brno" 90
                                 ]
                             , monthsLeft = 0
-                            , availableDecisions = []
                             }
 
                         result : Results
@@ -91,7 +88,6 @@ suite =
                         { you = createRegion youName youBbv
                         , others = List.indexedMap (\i bbv -> createRegion ("Region" ++ String.fromInt i) bbv) otherBbvs
                         , monthsLeft = monthsLeft
-                        , availableDecisions = []
                         }
                     )
                     (Fuzz.intRange 0 1000)
@@ -121,4 +117,5 @@ createRegion name bbv =
     , resources = { initResources | bbv = bbv }
     , upgrades = AssocSet.empty
     , upgradesAvailable = []
+    , availableDecisions = []
     }

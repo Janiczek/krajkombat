@@ -2,6 +2,7 @@ module Main exposing (Flags, Model, Msg, main)
 
 import AssocSet
 import Browser
+import Decision exposing (Decision)
 import Game exposing (Game)
 import Html exposing (Html)
 import Html.Events
@@ -10,7 +11,7 @@ import Random
 import Ranking exposing (Ranking)
 import Region exposing (Region)
 import Resource exposing (Resources)
-import Round
+import ResourceDelta exposing (ResourceDelta(..))
 import UI
 import Upgrade exposing (Upgrade)
 
@@ -33,7 +34,7 @@ type Msg
     | FinishIntro
       -- GameLoop
     | AdvanceMonth
-    | MakeDecision Game.Decision
+    | MakeDecision Decision
       -- GameEnded
     | BackToMainMenu
 
@@ -91,8 +92,7 @@ update msg model =
                 \game ->
                     let
                         ( newGame, newSeed ) =
-                            game
-                                |> Game.advanceMonth model.randomSeed
+                            Random.step (Game.advanceMonth game) model.randomSeed
 
                         newModel : Model
                         newModel =
@@ -234,7 +234,7 @@ viewGameLoop juice game =
         , UI.row []
             [ UI.section [ UI.cls "w-[60ch]" ]
                 [ UI.heading "Duležita rozhodnuti"
-                , viewDecisions game.availableDecisions
+                , viewDecisions game.you.availableDecisions
                 ]
             , UI.col [ UI.cls "w-[40ch]" ]
                 [ UI.section []
@@ -251,19 +251,19 @@ viewGameLoop juice game =
     ]
 
 
-viewDecisions : List Game.Decision -> Html Msg
+viewDecisions : List Decision -> Html Msg
 viewDecisions decisions =
     Html.table []
         (decisions |> List.map viewDecisionRow)
 
 
-viewDecisionRow : Game.Decision -> Html Msg
+viewDecisionRow : Decision -> Html Msg
 viewDecisionRow decision =
     Html.tr []
         [ Html.td [] [ Html.text decision.flavorText ]
         , Html.td [ UI.cls "pl-[2ch]" ]
             [ decision.deltas
-                |> List.map describeDelta
+                |> List.map viewDelta
                 |> String.join ", "
                 |> Html.text
             ]
@@ -273,37 +273,6 @@ viewDecisionRow decision =
                 "To chcu"
             ]
         ]
-
-
-describeDelta : Game.ResourceDelta -> String
-describeDelta delta =
-    let
-        plusMinus : number -> String
-        plusMinus n =
-            if n >= 0 then
-                "+"
-
-            else
-                ""
-    in
-    case delta of
-        Game.AP n ->
-            plusMinus n ++ String.fromInt n ++ " AP"
-
-        Game.APPerMonth n ->
-            plusMinus n ++ String.fromInt n ++ " AP/m"
-
-        Game.GREF f ->
-            plusMinus f ++ Round.round 2 f ++ " GREF"
-
-        Game.BREF f ->
-            plusMinus f ++ Round.round 2 f ++ " BREF"
-
-        Game.BBV n ->
-            plusMinus n ++ String.fromInt n ++ " BBV"
-
-        Game.BBVPerMonth n ->
-            plusMinus n ++ String.fromInt n ++ " BBV/m"
 
 
 viewMonthStats : String -> Int -> Html Msg
@@ -480,3 +449,34 @@ viewUpgrades upgrades =
                     |> List.map (\name -> Html.li [] [ Html.text name ])
                 )
             ]
+
+
+viewDelta : ResourceDelta -> String
+viewDelta delta =
+    let
+        plusMinus : number -> String
+        plusMinus n =
+            if n >= 0 then
+                "+"
+
+            else
+                "-"
+    in
+    case delta of
+        AP n ->
+            plusMinus n ++ String.fromInt n ++ " AP"
+
+        APPerMonth n ->
+            plusMinus n ++ String.fromInt n ++ " AP/m"
+
+        GREF n ->
+            plusMinus n ++ UI.float n ++ " GREF"
+
+        BREF n ->
+            plusMinus n ++ UI.float n ++ " BREF"
+
+        BBV n ->
+            plusMinus n ++ String.fromInt n ++ " BBV"
+
+        BBVPerMonth n ->
+            plusMinus n ++ String.fromInt n ++ " BBV/m"
