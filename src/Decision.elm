@@ -76,7 +76,6 @@ decisionContentGenerator type_ =
                     )
                     [ ( "Oprav chodniky"
                       , [ sub 20 30 AP
-                        , add 1 3 GREF
                         , sub 1 3 BREF
                         ]
                       )
@@ -102,7 +101,6 @@ decisionContentGenerator type_ =
                     , ( "Investuj do zdravotnictvi"
                       , [ sub 35 45 AP
                         , add 18 28 APPerMonth
-                        , add 7 12 GREF
                         , sub 4 9 BREF
                         ]
                       )
@@ -127,7 +125,6 @@ decisionContentGenerator type_ =
                     , [ sub 30 50 AP
                       , sub 4 8 APPerMonth
                       , add 5 15 GREF
-                      , sub 2 8 BREF
                       ]
                     )
                     [ ( "Vyzkum do biohackingu"
@@ -160,7 +157,6 @@ decisionContentGenerator type_ =
                       , [ sub 40 60 AP
                         , add 10 20 APPerMonth
                         , add 3 8 GREF
-                        , add 1 2 BREF
                         ]
                       )
                     , ( "Dustojne platy učitelu"
@@ -186,11 +182,10 @@ decisionContentGenerator type_ =
                     , ( "Sociálni programy pro chude"
                       , [ sub 15 25 AP
                         , add -1 10 APPerMonth
-                        , add 1 4 GREF
                         , sub 5 15 BREF
                         ]
                       )
-                    , ( "Policejni stat kamo"
+                    , ( "Policejni stat uvnitř statu kamo"
                       , [ sub 50 80 AP
                         , add 10 30 APPerMonth
                         , sub 10 20 GREF
@@ -201,7 +196,6 @@ decisionContentGenerator type_ =
                       , [ sub 18 28 AP
                         , add -5 10 APPerMonth
                         , add 3 8 GREF
-                        , sub 9 18 BREF
                         ]
                       )
                     ]
