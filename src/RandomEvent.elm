@@ -16,9 +16,9 @@ type alias RandomEvent =
 goodGenerator : Generator RandomEvent
 goodGenerator =
     Random.uniform ( "Dotace vyšly hej!", [ add 150 300 AP ] )
-        [ ( "Naš tym ty Pražaky zas uplně rozdupal!", [ add 40 80 AP, add 15 30 BBV ] )
+        [ ( "Naš tym ty Pražaky zas uplně rozdupal!", [ add 40 80 AP, add 5 20 BBV ] )
         , ( "Hackeři z SPŠE se někam naburali...", [ add 140 200 AP, add 1 2 BREF ] )
-        , ( "Hackeři z SPŠE zjistili že databaze KrajKombatu ma defaultni heslo 💀", [ add 10 20 BBV ] )
+        , ( "Hackeři z SPŠE zjistili že databaze KrajKombatu ma defaultni heslo 💀", [ add 5 10 BBV ] )
         , ( "Naše škola byla nejlepši v republice kamo", [ add 40 80 AP, add 20 40 APPerMonth, add 3 5 GREF ] )
         ]
         |> ResourceDelta.bundleGenerator

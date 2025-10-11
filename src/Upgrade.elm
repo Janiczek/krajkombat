@@ -36,10 +36,10 @@ description upgrade =
     case upgrade of
         BlackHatBootcamp ->
             """
-SPŠE chce zorganizovat intenzivni Black Hat Bootcamp pro tvou
-sekretařku. Z te se stane nadupany hacker a každe čtyři měsice se
-mužeš nabourat do narodni KrajKombat databaze a ukrast někomu pulku
-bodu. Myslim že si Maňa zasluži přidat.
+SPŠE chce zorganizovat intenzivni Black Hat Bootcamp pro tvou sekretařku. Z te
+se stane nadupany hacker a každych pět měsíců se mužeš nabourat do narodni
+KrajKombat databaze a ukrast někomu pulku bodu. Myslim že si Maňa zasluži
+přidat.
 """
 
         DataAnalytics ->
@@ -87,7 +87,7 @@ initBlackHat =
 
 resetBlackHat : BlackHatData
 resetBlackHat =
-    { monthsUntilAvailable = 4 }
+    { monthsUntilAvailable = 5 }
 
 
 advanceBlackHat : BlackHatData -> BlackHatData
