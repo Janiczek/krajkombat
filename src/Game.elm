@@ -76,6 +76,12 @@ type ResourceDelta
     | BBVPerMonth Int
 
 
+decisionsGenerator : Generator (List Decision)
+decisionsGenerator =
+    Random.list availableDecisionsPerMonth decisionGenerator
+        |> Random.map keepUniqueNames
+
+
 decisionGenerator : Generator Decision
 decisionGenerator =
     decisionTypeGenerator
@@ -191,10 +197,7 @@ gameInitGenerator =
         )
         |> Random.Extra.andMap (Region.generator Region.youName)
         |> Random.Extra.andMap (Region.listGenerator otherRegionsCount)
-        |> Random.Extra.andMap
-            (Random.list availableDecisionsPerMonth decisionGenerator
-                |> Random.map keepUniqueNames
-            )
+        |> Random.Extra.andMap decisionsGenerator
 
 
 keepUniqueNames : List Decision -> List Decision
@@ -223,7 +226,7 @@ advanceMonth seed game =
                 |> List.map Logic.advanceMonthForRegion
 
         ( newAvailableDecisions, seed1 ) =
-            Random.step (Random.list availableDecisionsPerMonth decisionGenerator) seed
+            Random.step decisionsGenerator seed
     in
     ( { game
         | you = newYou

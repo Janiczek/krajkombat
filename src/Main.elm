@@ -267,7 +267,11 @@ viewDecisionRow decision =
                 |> String.join ", "
                 |> Html.text
             ]
-        , Html.td [ UI.cls "pl-[2ch]" ] [ UI.btn [ Html.Events.onClick (MakeDecision decision) ] "To chcu" ]
+        , Html.td [ UI.cls "pl-[2ch]" ]
+            [ UI.btn
+                [ Html.Events.onClick (MakeDecision decision) ]
+                "To chcu"
+            ]
         ]
 
 
