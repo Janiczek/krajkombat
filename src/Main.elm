@@ -1,6 +1,5 @@
 module Main exposing (Flags, Model, Msg, main)
 
-import AssocSet
 import Browser
 import Decision exposing (Decision)
 import Game exposing (Game)
@@ -15,7 +14,7 @@ import Region exposing (Region)
 import Resource exposing (Resources)
 import ResourceDelta exposing (ResourceDelta(..))
 import UI
-import Upgrade exposing (Upgrade)
+import Upgrade exposing (Upgrade(..))
 
 
 type alias Flags =
@@ -26,6 +25,7 @@ type alias Model =
     { gamePhase : Game.Phase
     , juice : Juice
     , randomSeed : Random.Seed
+    , blackHatOperationInProgress : Bool
     }
 
 
@@ -38,6 +38,8 @@ type Msg
     | AdvanceMonth
     | MakeDecision Decision
     | DiscardDecision Decision
+    | StartBlackHatOperation
+    | SelectBlackHatTarget { regionName : String }
       -- Random Events Modal
     | ApplyNextRandomEvent
       -- GameEnded
@@ -67,6 +69,7 @@ init flags =
     ( { gamePhase = Game.MainMenu
       , juice = juice
       , randomSeed = newSeed
+      , blackHatOperationInProgress = False
       }
     , Cmd.none
     )
@@ -136,6 +139,15 @@ update msg model =
             model
                 |> updateGameLoop Game.ApplyNextRandomEvent
 
+        StartBlackHatOperation ->
+            ( { model | blackHatOperationInProgress = True }
+            , Cmd.none
+            )
+
+        SelectBlackHatTarget regionName ->
+            model
+                |> updateGameLoop (Game.ApplyBlackHatOperation regionName)
+
 
 advanceJuice : Model -> Model
 advanceJuice model =
@@ -183,10 +195,15 @@ view : Model -> Browser.Document Msg
 view model =
     { title = title
     , body =
-        Html.div
+        [ Html.div
             [ UI.cls "font-mono p-2 pt-8 flex justify-center" ]
-            (viewGamePhase model.juice model.gamePhase)
-            :: viewRandomEventsModal model
+            ([ viewGamePhase model.juice model.gamePhase
+             , viewRandomEventsModal model
+             , viewBlackHatOperationModal model
+             ]
+                |> List.concat
+            )
+        ]
     }
 
 
@@ -254,10 +271,9 @@ viewGameLoop juice game =
                     viewDecisions game.you.resources game.you.availableDecisions
                 ]
             , UI.col [ UI.cls "w-[40ch]" ]
-                [ UI.section []
-                    [ UI.heading ("Tvuj tym: " ++ Region.youName ++ "!")
-                    , viewYourStats game.you
-                    ]
+                [ UI.heading <| "Tvuj tym: " ++ Region.youName ++ "!"
+                , viewResources game.you.resources
+                , viewUpgrades game.you
                 , UI.section []
                     [ UI.heading "KrajKombat - Průběžna tabulka"
                     , viewRanking ranking
@@ -476,14 +492,6 @@ viewRanking ranking =
         ]
 
 
-viewYourStats : Region -> Html Msg
-viewYourStats region =
-    UI.col []
-        [ viewResources region.resources
-        , viewUpgrades region.upgrades
-        ]
-
-
 viewResources : Resources -> Html msg
 viewResources stats =
     let
@@ -494,7 +502,7 @@ viewResources stats =
                 , Html.td [ UI.cls "text-right align-top text-base" ] [ Html.text value ]
                 ]
     in
-    UI.col []
+    UI.section []
         [ UI.heading "Kasa:"
         , Html.table [ UI.cls "min-w-[20ch] table-auto border-spacing-y-2" ]
             [ Html.tbody []
@@ -509,26 +517,35 @@ viewResources stats =
         ]
 
 
-viewUpgrades : AssocSet.Set Upgrade -> Html msg
-viewUpgrades upgrades =
-    let
-        purchasedUpgrades : List String
-        purchasedUpgrades =
-            upgrades
-                |> AssocSet.toList
-                |> List.map (\upgrade -> Upgrade.name upgrade)
-    in
-    if List.isEmpty purchasedUpgrades then
-        UI.none
+viewUpgrades : Region -> Html Msg
+viewUpgrades region =
+    UI.section []
+        [ UI.heading "Upgrady:"
+        , if Region.hasPurchasedUpgrades region || Region.hasAvailableUpgrades region then
+            Html.ul []
+                ([ case region.blackHatUpgrade of
+                    Nothing ->
+                        []
 
-    else
-        UI.col []
-            [ UI.heading "Upgrades:"
-            , Html.ul []
-                (purchasedUpgrades
-                    |> List.map (\name -> Html.li [] [ Html.text name ])
+                    Just { monthsUntilAvailable } ->
+                        if monthsUntilAvailable <= 0 then
+                            [ Html.li []
+                                [ Html.text (Upgrade.name BlackHatBootcamp)
+                                , UI.btn
+                                    [ Html.Events.onClick StartBlackHatOperation ]
+                                    (Upgrade.procButtonLabel BlackHatBootcamp)
+                                ]
+                            ]
+
+                        else
+                            []
+                 ]
+                    |> List.concat
                 )
-            ]
+
+          else
+            Html.text "Zatím žádne"
+        ]
 
 
 type Nature
@@ -684,3 +701,66 @@ viewRandomEventsModal model =
                             ]
                         ]
                     ]
+
+
+viewBlackHatOperationModal : Model -> List (Html Msg)
+viewBlackHatOperationModal model =
+    if model.blackHatOperationInProgress then
+        case model.gamePhase of
+            Game.MainMenu ->
+                []
+
+            Game.Intro ->
+                []
+
+            Game.GameEnded _ ->
+                []
+
+            Game.GameLoop game ->
+                let
+                    ranking : Ranking
+                    ranking =
+                        Ranking.rank { you = game.you, others = game.others }
+                in
+                [ UI.modal []
+                    [ UI.col [ UI.cls "gap-4" ]
+                        [ UI.heading "Black Hat Operace"
+                        , Html.table [ UI.cls "w-full mb-4 text-sm" ]
+                            [ Html.thead []
+                                [ Html.tr []
+                                    [ Html.th [] [ Html.text "Region" ]
+                                    , Html.th [] [ Html.text "Body" ]
+                                    ]
+                                ]
+                            , Html.tbody []
+                                (ranking
+                                    |> List.filter (\rank -> not (List.member Region.youName rank.names))
+                                    |> List.map
+                                        (\rank ->
+                                            Html.tr []
+                                                [ Html.td [] [ Html.text (ordinal rank.rank) ]
+                                                , Html.td []
+                                                    [ UI.col []
+                                                        (rank.names
+                                                            |> List.map
+                                                                (\regionName ->
+                                                                    UI.row []
+                                                                        [ UI.btn
+                                                                            [ Html.Events.onClick (SelectBlackHatTarget { regionName = regionName }) ]
+                                                                            "Čmajz!"
+                                                                        , Html.text regionName
+                                                                        ]
+                                                                )
+                                                        )
+                                                    ]
+                                                , Html.td [] [ Html.text (String.fromInt rank.bbv) ]
+                                                ]
+                                        )
+                                )
+                            ]
+                        ]
+                    ]
+                ]
+
+    else
+        []

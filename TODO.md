@@ -20,6 +20,8 @@
 - [ ] urgency list (+ their deadlines / months remaining before they blow up)
 - [ ] available upgrades list (and after how many months they disappear - you've had your chance)
 
+- [ ] upgrade: sabotage a competing region (take half their BBV)
+
 - [x] other regions' resources (same types as yours)
 
 - [x] random list of investments for this month

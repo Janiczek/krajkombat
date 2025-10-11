@@ -5,27 +5,27 @@ module Region exposing
     , applyRandomEvent
     , applyRandomEvents
     , discardDecision
+    , hasAvailableUpgrades
+    , hasPurchasedUpgrades
     , initGenerator
     , initListGenerator
     , youName
     )
 
-import AssocSet
 import Decision exposing (Decision)
 import Random exposing (Generator)
 import Random.Extra
 import Random.List
 import RandomEvent exposing (RandomEvent)
 import Resource exposing (Resources)
-import ResourceDelta
 import Upgrade exposing (Upgrade)
 
 
 type alias Region =
     { name : String
     , resources : Resources
-    , upgrades : AssocSet.Set Upgrade
-    , upgradesAvailable : List { upgrade : Upgrade, monthsLeft : Int }
+    , blackHatUpgrade : Maybe { monthsUntilAvailable : Int }
+    , upgradesAvailable : List Upgrade
     , availableDecisions : List Decision
     , randomEvents : List RandomEvent
     }
@@ -65,7 +65,7 @@ initGenerator name =
         (\availableDecisions ->
             { name = name
             , resources = resources
-            , upgrades = AssocSet.empty
+            , blackHatUpgrade = Nothing
             , upgradesAvailable = []
             , availableDecisions = availableDecisions
             , randomEvents = []
@@ -97,6 +97,12 @@ advanceMonth ({ resources } as region) =
                 | resources = newResources
                 , availableDecisions = availableDecisions
                 , randomEvents = randomEvents
+                , blackHatUpgrade =
+                    region.blackHatUpgrade
+                        |> Maybe.map
+                            (\{ monthsUntilAvailable } ->
+                                { monthsUntilAvailable = max 0 (monthsUntilAvailable - 1) }
+                            )
             }
         )
         |> Random.Extra.andMap (Decision.listGenerator newResources)
@@ -144,3 +150,13 @@ discardDecision decision region =
             region.availableDecisions
                 |> List.filter (\d -> d.flavorText /= decision.flavorText)
     }
+
+
+hasPurchasedUpgrades : Region -> Bool
+hasPurchasedUpgrades region =
+    List.any identity [ region.blackHatUpgrade /= Nothing ]
+
+
+hasAvailableUpgrades : Region -> Bool
+hasAvailableUpgrades region =
+    not (List.isEmpty region.upgradesAvailable)

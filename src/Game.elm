@@ -11,18 +11,20 @@ module Game exposing
     )
 
 import Decision exposing (Decision)
+import List.Extra
 import Random exposing (Generator)
 import Random.Extra
 import RandomEvent
 import Ranking exposing (Ranking)
 import Region exposing (Region)
-import Resource
+import Resource exposing (Resources)
 
 
 type Msg
     = MakeDecision Decision
     | DiscardDecision Decision
     | ApplyNextRandomEvent
+    | ApplyBlackHatOperation { regionName : String }
 
 
 type Phase
@@ -175,6 +177,49 @@ update msg game =
 
         ApplyNextRandomEvent ->
             applyNextRandomEvent game
+
+        ApplyBlackHatOperation regionName ->
+            applyBlackHatOperation regionName game
+
+
+applyBlackHatOperation : { regionName : String } -> Game -> Game
+applyBlackHatOperation { regionName } ({ you, others } as game) =
+    let
+        yourResources : Resources
+        yourResources =
+            you.resources
+    in
+    case List.Extra.find (\r -> r.name == regionName) others of
+        Just other ->
+            let
+                amount =
+                    other.resources.bbv // 2
+
+                theirNewBbv =
+                    other.resources.bbv - amount
+
+                yourNewBbv =
+                    yourResources.bbv + amount
+
+                theirResources =
+                    other.resources
+            in
+            { game
+                | you = { you | resources = { yourResources | bbv = yourNewBbv } }
+                , others =
+                    others
+                        |> List.map
+                            (\r ->
+                                if r.name == regionName then
+                                    { other | resources = { theirResources | bbv = theirNewBbv } }
+
+                                else
+                                    r
+                            )
+            }
+
+        Nothing ->
+            game
 
 
 makeDecision : Decision -> Game -> Game
