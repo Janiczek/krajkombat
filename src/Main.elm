@@ -259,6 +259,10 @@ viewMainMenu =
             [ Html.text "Zadavatel: Game Devs Ostrava / Zpracovatel: "
             , UI.link "https://bsky.app/profile/janiczek.cz" "Martin Janiczek"
             ]
+        , Html.h2 [ UI.cls "text-sm" ]
+            [ Html.text "Grafika: "
+            , UI.link "https://kenney.nl/assets/toon-characters-1" "Kenney.nl"
+            ]
         , UI.btn [ Html.Events.onClick StartGame ] "Cože"
         ]
     ]
