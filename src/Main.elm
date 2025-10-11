@@ -5,6 +5,7 @@ import Browser
 import Decision exposing (Decision)
 import Game exposing (Game)
 import Html exposing (Html)
+import Html.Attributes
 import Html.Events
 import Juice exposing (Juice)
 import Random
@@ -234,7 +235,7 @@ viewGameLoop juice game =
         , UI.row []
             [ UI.section [ UI.cls "w-[60ch]" ]
                 [ UI.heading "Duležita rozhodnuti"
-                , viewDecisions game.you.availableDecisions
+                , viewDecisions game.you.resources game.you.availableDecisions
                 ]
             , UI.col [ UI.cls "w-[40ch]" ]
                 [ UI.section []
@@ -251,28 +252,64 @@ viewGameLoop juice game =
     ]
 
 
-viewDecisions : List Decision -> Html Msg
-viewDecisions decisions =
+viewDecisions : Resources -> List Decision -> Html Msg
+viewDecisions yourResources decisions =
     Html.table []
-        (decisions |> List.map viewDecisionRow)
+        (decisions |> List.map (viewDecisionRow yourResources))
 
 
-viewDecisionRow : Decision -> Html Msg
-viewDecisionRow decision =
-    Html.tr []
-        [ Html.td []
+viewDecisionRow : Resources -> Decision -> Html Msg
+viewDecisionRow yourResources decision =
+    let
+        canApply : Bool
+        canApply =
+            Decision.canApplyDeltas yourResources decision
+
+        flavorTextNode : Html msg
+        flavorTextNode =
+            if canApply then
+                Html.text decision.flavorText
+
+            else
+                Html.span [ UI.cls "line-through text-gray-400" ] [ Html.text decision.flavorText ]
+
+        deltaClass : String
+        deltaClass =
+            if canApply then
+                ""
+
+            else
+                "text-gray-400"
+
+        deltaNodes : List (Html msg)
+        deltaNodes =
+            decision.deltas
+                |> List.map viewDelta
+                |> List.intersperse (Html.text ", ")
+    in
+    Html.tr
+        [ UI.mod "hover"
+            (if canApply then
+                "bg-blue-50"
+
+             else
+                "bg-red-50"
+            )
+        ]
+        [ Html.td [ UI.cls "py-2" ]
             [ Html.div []
-                [ Html.div [] [ Html.text decision.flavorText ]
-                , Html.div [ UI.cls "text-sm" ]
-                    (decision.deltas
-                        |> List.map viewDelta
-                        |> List.intersperse (Html.text ", ")
-                    )
+                [ Html.div [] [ flavorTextNode ]
+                , Html.div [ UI.cls ("text-sm " ++ deltaClass) ]
+                    deltaNodes
                 ]
             ]
         , Html.td [ UI.cls "pl-[2ch] text-right text-nowrap" ]
             [ UI.btn
-                [ Html.Events.onClick (MakeDecision decision) ]
+                [ Html.Events.onClick (MakeDecision decision)
+                , Html.Attributes.disabled (not canApply)
+
+                -- TODO tooltip saying what you're missing
+                ]
                 "To chcu"
             ]
         ]

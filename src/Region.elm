@@ -78,7 +78,9 @@ advanceMonth ({ resources } as region) =
                         | ap = resources.ap + resources.apPerMonth
                         , bbv = resources.bbv + resources.bbvPerMonth
                     }
-                , availableDecisions = availableDecisions
+                , availableDecisions =
+                    availableDecisions
+                        |> List.filter (Decision.canApplyDeltas resources)
             }
         )
         |> Random.Extra.andMap Decision.listGenerator

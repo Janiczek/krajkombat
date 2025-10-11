@@ -15,6 +15,7 @@ import Random exposing (Generator)
 import Random.Extra
 import Ranking exposing (Ranking)
 import Region exposing (Region)
+import Resource
 
 
 type Msg
@@ -119,18 +120,16 @@ update msg game =
 
 
 makeDecision : Decision -> Game -> Game
-makeDecision decision game =
+makeDecision decision ({ you } as game) =
     let
         updatedYou : Region
         updatedYou =
-            { name = game.you.name
-            , resources = game.you.resources
-            , upgrades = game.you.upgrades
-            , upgradesAvailable = game.you.upgradesAvailable
-            , availableDecisions =
-                game.you.availableDecisions
-                    -- this works because we made the names unique in the generator
-                    |> List.filter (\d -> d.flavorText /= decision.flavorText)
+            { you
+                | resources = List.foldl Resource.applyDelta you.resources decision.deltas
+                , availableDecisions =
+                    game.you.availableDecisions
+                        -- this works because we made the names unique in the generator
+                        |> List.filter (\d -> d.flavorText /= decision.flavorText)
             }
     in
     { game | you = updatedYou }

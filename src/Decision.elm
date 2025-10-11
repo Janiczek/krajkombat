@@ -1,12 +1,14 @@
 module Decision exposing
     ( Decision
     , DecisionType(..)
+    , canApplyDeltas
     , listGenerator
     )
 
 import Dict
 import Random exposing (Generator)
 import Random.Extra
+import Resource exposing (Resources)
 import ResourceDelta exposing (ResourceDelta(..))
 
 
@@ -232,3 +234,8 @@ keepUniqueNames decisions =
         |> List.map (\decision -> ( decision.flavorText, decision ))
         |> Dict.fromList
         |> Dict.values
+
+
+canApplyDeltas : Resources -> Decision -> Bool
+canApplyDeltas resources decision =
+    List.all (Resource.canApplyDelta resources) decision.deltas
