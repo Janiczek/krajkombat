@@ -84,7 +84,11 @@ link href label =
 section : List (Html.Attribute msg) -> List (Html msg) -> Html msg
 section attrs children =
     col
-        (attrs ++ [ cls "border border-gray-200 bg-gray-50 rounded-md p-2 shadow-sm" ])
+        (attrs
+            ++ [ cls "border border-gray-200 bg-gray-200/30 rounded-md p-2 shadow-sm"
+               , Html.Attributes.style "backdrop-filter" "blur(6px)"
+               ]
+        )
         children
 
 

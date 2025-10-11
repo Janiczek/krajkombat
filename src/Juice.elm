@@ -43,7 +43,7 @@ finishIntroButtonTexts : ( String, List String )
 finishIntroButtonTexts =
     ( "Drž už zobak"
     , [ "Si moc dluhy"
-      , "Už drž pec"
+      , "Už drž pec prosimtě"
       , "No dobre no"
       , "Tak dem na to"
       , "Tak už pome"

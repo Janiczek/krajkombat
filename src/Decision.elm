@@ -71,12 +71,12 @@ decisionContentGenerator type_ =
                     ( "Rozkopej Rudnou ale musi to byt"
                     , [ sub 40 50 AP
                       , add 5 15 GREF
-                      , add 2 5 BREF
+                      , add 5 10 BREF
                       ]
                     )
                     [ ( "Oprav chodniky"
                       , [ sub 20 30 AP
-                        , sub 1 3 BREF
+                        , sub 1 2 BREF
                         ]
                       )
                     , ( "Mistni sportovni kroužky"
@@ -101,20 +101,20 @@ decisionContentGenerator type_ =
                     , ( "Investuj do zdravotnictvi"
                       , [ sub 35 45 AP
                         , add 18 28 APPerMonth
-                        , sub 4 9 BREF
+                        , sub 2 4 BREF
                         ]
                       )
                     , ( "Nova lepši sekretařka"
                       , [ sub 3 8 AP
                         , add 5 15 APPerMonth
                         , add 1 3 GREF
-                        , add 1 3 BREF
+                        , add 2 6 BREF
                         ]
                       )
                     , ( "Sabatikal na Bali"
                       , [ sub 20 40 AP
                         , add 2 4 GREF
-                        , add 1 3 BREF
+                        , add 2 5 BREF
                         ]
                       )
                     ]

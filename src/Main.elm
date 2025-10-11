@@ -430,7 +430,7 @@ viewIntro juice =
                 [ Html.tbody []
                     [ Html.tr []
                         [ Html.td [] [ Html.div [ UI.cls "flex flex-row justify-end" ] [ UI.sprite UI.CharExplain ] ]
-                        , Html.td [] []
+                        , Html.td [ UI.cls "pl-4" ] [ UI.heading "Intro!" ]
                         ]
                     , viewIntroSection "Lore dump" """
 Je rok 2028, čerstvě po prezidentských volbách, které dopadly katastrofálně a
@@ -558,10 +558,10 @@ viewDecisionRow yourResources decision =
     Html.tr
         [ UI.mod "hover"
             (if canApply then
-                "bg-blue-50"
+                "bg-blue-100"
 
              else
-                "bg-red-50"
+                "bg-red-100"
             )
         ]
         [ Html.td [ UI.cls "py-2" ]
@@ -693,7 +693,7 @@ viewRanking ranking =
                                     in
                                     Html.tr
                                         [ rowCls
-                                        , UI.mod "hover" "bg-blue-50"
+                                        , UI.mod "hover" "bg-blue-100"
                                         ]
                                         [ Html.td [] [ Html.text ordinalText ]
                                         , Html.td [ UI.cls "pl-[2ch] text-xl" ] [ Html.text (medalForRank rank) ]
@@ -711,7 +711,7 @@ viewResources stats =
     let
         statRow : String -> String -> Html msg
         statRow label value =
-            Html.tr [ UI.mod "hover" "bg-blue-50" ]
+            Html.tr [ UI.mod "hover" "bg-blue-100" ]
                 [ Html.td [ UI.cls "py-1 pr-2 text-base" ] [ Html.text label ]
                 , Html.td [ UI.cls "text-right align-top text-base" ] [ Html.text value ]
                 ]
@@ -1012,7 +1012,7 @@ viewBlackHatOperationModal model =
                                     |> List.filter (\rank -> rank.name /= Region.youName)
                                     |> List.map
                                         (\rank ->
-                                            Html.tr [ UI.mod "hover" "bg-blue-50" ]
+                                            Html.tr [ UI.mod "hover" "bg-blue-100" ]
                                                 [ Html.td [] [ Html.text rank.name ]
                                                 , Html.td [ UI.cls "text-right pr-2" ] [ Html.text (String.fromInt rank.bbv) ]
                                                 , Html.td []
