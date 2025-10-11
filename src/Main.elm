@@ -333,14 +333,6 @@ viewDecisionRow yourResources decision =
 
             else
                 Html.span [ UI.cls "line-through text-gray-400" ] [ Html.text decision.flavorText ]
-
-        deltaClass : String
-        deltaClass =
-            if canApply then
-                ""
-
-            else
-                "text-gray-400"
     in
     Html.tr
         [ UI.mod "hover"
@@ -354,7 +346,7 @@ viewDecisionRow yourResources decision =
         [ Html.td [ UI.cls "py-2" ]
             [ Html.div []
                 [ Html.div [] [ flavorTextNode ]
-                , viewDeltas decision.deltas
+                , viewDeltas yourResources decision.deltas
                 ]
             ]
         , Html.td [ UI.cls "pl-[2ch] text-right text-nowrap" ]
@@ -592,7 +584,7 @@ viewAvailableUpgrades region =
                                 ]
                                 "Sem s tim"
                             ]
-                        , viewDeltas cost
+                        , viewDeltas region.resources cost
                         , Html.span [ UI.cls "text-sm" ] [ Html.text (Upgrade.description upgrade) ]
                         ]
                     ]
@@ -737,7 +729,7 @@ viewRandomEventsModal model =
                             , Html.div []
                                 [ Html.text currentEvent.flavorText ]
                             , if not (List.isEmpty currentEvent.deltas) then
-                                viewDeltas currentEvent.deltas
+                                viewDeltas game.you.resources currentEvent.deltas
 
                               else
                                 UI.none
@@ -751,11 +743,17 @@ viewRandomEventsModal model =
                     ]
 
 
-viewDeltas : List ResourceDelta -> Html Msg
-viewDeltas deltas =
-    Html.ul [ UI.cls "text-sm list-disc ml-6" ]
+viewDeltas : Resources -> List ResourceDelta -> Html Msg
+viewDeltas resources deltas =
+    let
+        canApply : Bool
+        canApply =
+            Resource.canApplyDeltas resources deltas
+    in
+    Html.ul
+        [ UI.cls "text-sm list-disc ml-6" ]
         (deltas
-            |> List.map (\delta -> Html.li [] [ viewDelta { canApply = True } delta ])
+            |> List.map (\delta -> Html.li [] [ viewDelta { canApply = canApply } delta ])
         )
 
 

@@ -2,7 +2,6 @@ module Resource exposing
     ( Resources
     , applyDelta
     , applyDeltas
-    , canApplyDelta
     , canApplyDeltas
     , init
     )

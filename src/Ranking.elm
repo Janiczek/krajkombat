@@ -51,6 +51,7 @@ rank { you, others } =
                 )
         step current ( ranked, state ) =
             let
+                rank_ : Int
                 rank_ =
                     case state.previousBBV of
                         Just prevBbv ->
@@ -72,6 +73,10 @@ rank { you, others } =
             , { previousBBV = Just current.bbv, currentRank = rank_, index = state.index + 1 }
             )
 
+        init :
+            ( List { rank : Int, bbv : Int, names : List String }
+            , StepState
+            )
         init =
             ( [], { previousBBV = Nothing, currentRank = 0, index = 0 } )
     in

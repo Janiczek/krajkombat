@@ -2,7 +2,6 @@ module Region exposing
     ( Region
     , advanceMonth
     , applyDecision
-    , applyRandomEvent
     , applyRandomEvents
     , buyUpgrade
     , discardDecision
