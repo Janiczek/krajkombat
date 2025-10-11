@@ -556,10 +556,11 @@ viewGameLoop juice game =
                 ]
             , UI.col [ UI.cls "w-[40ch]" ]
                 [ if game.you.dataAnalyticsUpgrade then
-                    Html.Lazy.lazy4 BBVChart.view
+                    Html.Lazy.lazy5 BBVChart.view
                         game.you.resources.bbvPerMonth
                         game.you.resources.bbv
                         game.monthsLeft
+                        False
                         game.bbvHistory
 
                   else
@@ -702,10 +703,11 @@ viewGameEnded_ message sprite lore juice resultsData =
         , UI.sprite sprite
         , UI.row []
             [ UI.section [] [ viewRanking resultsData.ranking ]
-            , Html.Lazy.lazy4 BBVChart.view
+            , Html.Lazy.lazy5 BBVChart.view
                 resultsData.you.resources.bbvPerMonth
                 resultsData.you.resources.bbv
                 0
+                True
                 resultsData.bbvHistory
             ]
         , UI.prose lore

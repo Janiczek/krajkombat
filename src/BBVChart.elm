@@ -10,14 +10,15 @@ import UI
 import VegaLite
 
 
-view : Int -> Int -> Int -> Dict String (List Int) -> Html.Html msg
-view yourBbvPerMonth yourBbv currentMonthsLeft data =
+view : Int -> Int -> Int -> Bool -> Dict String (List Int) -> Html.Html msg
+view yourBbvPerMonth yourBbv currentMonthsLeft isFinalScreen data =
     Html.node "x-vega"
         [ Html.Attributes.property "spec"
             (spec
                 yourBbvPerMonth
                 yourBbv
                 currentMonthsLeft
+                isFinalScreen
                 data
             )
         ]
@@ -32,8 +33,8 @@ type alias Row =
     }
 
 
-spec : Int -> Int -> Int -> Dict String (List Int) -> VegaLite.Spec
-spec yourBbvPerMonth yourBbv currentMonthsLeft rawData =
+spec : Int -> Int -> Int -> Bool -> Dict String (List Int) -> VegaLite.Spec
+spec yourBbvPerMonth yourBbv currentMonthsLeft isFinalScreen rawData =
     let
         currentMonth =
             Constants.initMonthsLeft - currentMonthsLeft
@@ -71,7 +72,11 @@ spec yourBbvPerMonth yourBbv currentMonthsLeft rawData =
                         { month = i
                         , symbol = name
                         , bbv =
-                            if name == Region.youName && i == currentMonth then
+                            if
+                                (name == Region.youName)
+                                    && (i == currentMonth)
+                                    && not isFinalScreen
+                            then
                                 yourBbv
 
                             else
@@ -82,7 +87,7 @@ spec yourBbvPerMonth yourBbv currentMonthsLeft rawData =
 
         rowsWithoutPredictions : List Row
         rowsWithoutPredictions =
-            List.range 0 Constants.initMonthsLeft
+            List.range 0 (Constants.initMonthsLeft + 1)
                 |> List.concatMap getRow
 
         predictionRows : List Row
@@ -104,9 +109,9 @@ spec yourBbvPerMonth yourBbv currentMonthsLeft rawData =
         data =
             VegaLite.dataFromColumns []
                 << VegaLite.dataColumn "month" (VegaLite.nums (List.map (.month >> toFloat) rows))
-                << VegaLite.dataColumn "Kraj" (VegaLite.strs (List.map .symbol rows))
-                << VegaLite.dataColumn "BBV" (VegaLite.nums (List.map (.bbv >> toFloat) rows))
-                << VegaLite.dataColumn "Predikce" (VegaLite.boos (List.map .predicted rows))
+                << VegaLite.dataColumn "symbol" (VegaLite.strs (List.map .symbol rows))
+                << VegaLite.dataColumn "bbv" (VegaLite.nums (List.map (.bbv >> toFloat) rows))
+                << VegaLite.dataColumn "predicted" (VegaLite.boos (List.map .predicted rows))
 
         enc =
             VegaLite.encoding
@@ -118,15 +123,15 @@ spec yourBbvPerMonth yourBbv currentMonthsLeft rawData =
                         ]
                     ]
                 << VegaLite.position VegaLite.Y
-                    [ VegaLite.pName "BBV"
+                    [ VegaLite.pName "bbv"
                     , VegaLite.pQuant
                     ]
                 << VegaLite.strokeDash
-                    [ VegaLite.mName "Predikce"
+                    [ VegaLite.mName "predicted"
                     , VegaLite.mNominal
                     ]
                 << VegaLite.color
-                    [ VegaLite.mName "Kraj"
+                    [ VegaLite.mName "symbol"
                     , VegaLite.mScale
                         [ VegaLite.scDomain (VegaLite.doStrs names)
                         , VegaLite.scRange
