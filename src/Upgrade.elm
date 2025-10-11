@@ -3,12 +3,12 @@ module Upgrade exposing
     , Upgrade(..)
     , advanceBlackHat
     , blackHatAmount
+    , blackHatButtonLabel
     , chance
     , cost
     , description
     , initBlackHat
     , name
-    , procButtonLabel
     , resetBlackHat
     )
 
@@ -18,6 +18,7 @@ import ResourceDelta exposing (ResourceDelta(..))
 type Upgrade
     = -- Once in 3 months you can hack the national KrajKombat database and steal half of the BBV of one region.
       BlackHatBootcamp
+    | DataAnalytics
 
 
 name : Upgrade -> String
@@ -25,6 +26,9 @@ name upgrade =
     case upgrade of
         BlackHatBootcamp ->
             "Black Hat Bootcamp"
+
+        DataAnalytics ->
+            "Datovy analytik ze Slezske univerzity"
 
 
 description : Upgrade -> String
@@ -38,6 +42,14 @@ mužeš nabourat do narodni KrajKombat databaze a ukrast někomu pulku
 bodu. Myslim že si Maňa zasluži přidat.
 """
 
+        DataAnalytics ->
+            """
+Profesor Bartl ti chce dohodit do officu jednoho doktoranta Aplikovane
+matematiky. Jeho ukol bude donest ti každy měsic hezky graf jak se vyvijela
+tabulka KrajKombatu (jak na tom byly a jsou všechny kraje ohledně BBV). Možna to
+k něčemu bude?
+"""
+
 
 cost : Upgrade -> List ResourceDelta
 cost upgrade =
@@ -45,12 +57,13 @@ cost upgrade =
         BlackHatBootcamp ->
             [ AP -150, APPerMonth -5 ]
 
+        DataAnalytics ->
+            [ APPerMonth -10 ]
 
-procButtonLabel : Upgrade -> String
-procButtonLabel upgrade =
-    case upgrade of
-        BlackHatBootcamp ->
-            "Maňa do toho"
+
+blackHatButtonLabel : String
+blackHatButtonLabel =
+    "Maňa do toho"
 
 
 chance : Upgrade -> Float
@@ -58,6 +71,9 @@ chance upgrade =
     case upgrade of
         BlackHatBootcamp ->
             0.4
+
+        DataAnalytics ->
+            0.9
 
 
 type alias BlackHatData =

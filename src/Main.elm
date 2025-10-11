@@ -1,5 +1,6 @@
 module Main exposing (Flags, Model, Msg, main)
 
+import BBVChart
 import Browser
 import Browser.Dom
 import Browser.Events
@@ -10,11 +11,10 @@ import Game exposing (Game)
 import Html exposing (Html)
 import Html.Attributes
 import Html.Events
+import Html.Lazy
 import Juice exposing (Juice)
 import List.Extra
 import Logo
-import PluralRules
-import PluralRules.Cz
 import Random
 import Ranking exposing (Ranking)
 import Region exposing (Region)
@@ -23,6 +23,7 @@ import ResourceDelta exposing (ResourceDelta(..))
 import Task
 import UI
 import Upgrade exposing (Upgrade(..))
+import VegaLite
 
 
 type alias Flags =
@@ -550,7 +551,12 @@ viewGameLoop juice game =
               else
                 viewDecisions game.you.resources game.you.availableDecisions
             , UI.col [ UI.cls "w-[40ch]" ]
-                [ viewResources game.you.resources
+                [ if game.you.dataAnalyticsUpgrade then
+                    Html.Lazy.lazy BBVChart.view game.bbvHistory
+
+                  else
+                    UI.none
+                , viewResources game.you.resources
                 , viewUpgrades game.you
                 , UI.section []
                     [ UI.heading "KrajKombat - Průběžna tabulka"
@@ -819,19 +825,6 @@ viewResources stats =
         ]
 
 
-pluralRules : PluralRules.Rules
-pluralRules =
-    PluralRules.fromList
-        [ ( "měsíc"
-          , [ ( PluralRules.One, "měsíc" )
-            , ( PluralRules.Few, "měsíce" ) -- 2..4
-            , ( PluralRules.Many, "měsíců" )
-            , ( PluralRules.Other, "měsíců" )
-            ]
-          )
-        ]
-
-
 viewUpgrades : Region -> Html Msg
 viewUpgrades region =
     UI.section []
@@ -848,7 +841,7 @@ viewUpgrades region =
                             , if monthsUntilAvailable <= 0 then
                                 UI.btn
                                     [ Html.Events.onClick StartBlackHatOperation ]
-                                    (Upgrade.procButtonLabel BlackHatBootcamp)
+                                    Upgrade.blackHatButtonLabel
 
                               else
                                 UI.btn
@@ -856,7 +849,7 @@ viewUpgrades region =
                                     ("Vydrž "
                                         ++ String.fromInt monthsUntilAvailable
                                         ++ " "
-                                        ++ PluralRules.Cz.pluralize pluralRules monthsUntilAvailable "měsíc"
+                                        ++ UI.pluralize UI.Mesic monthsUntilAvailable
                                     )
                             ]
                         ]
@@ -880,9 +873,9 @@ viewAvailableUpgrades region =
                     cost =
                         Upgrade.cost upgrade
                 in
-                Html.li []
+                Html.li [ UI.cls "pt-4" ]
                     [ UI.col []
-                        [ UI.row [ UI.cls "justify-between" ]
+                        [ UI.row [ UI.cls "justify-between gap-4" ]
                             [ Html.span [] [ Html.text (Upgrade.name upgrade) ]
                             , UI.btn
                                 [ Html.Events.onClick (BuyUpgrade upgrade)
@@ -958,10 +951,10 @@ viewDelta { canApply } delta =
         content =
             case delta of
                 AP n ->
-                    plusMinus n ++ String.fromInt (abs n) ++ " Chechtaky"
+                    plusMinus n ++ String.fromInt (abs n) ++ " " ++ UI.pluralize UI.Chechtak n
 
                 APPerMonth n ->
-                    plusMinus n ++ String.fromInt (abs n) ++ " Chechtaky/měsíc"
+                    plusMinus n ++ String.fromInt (abs n) ++ " " ++ UI.pluralize UI.Chechtak n ++ "/měsíc"
 
                 GREF n ->
                     plusMinus n ++ UI.float (toFloat (abs n) / 100) ++ " Dobre nahody/měsíc"

@@ -25,10 +25,13 @@ import Upgrade exposing (Upgrade(..))
 type alias Region =
     { name : String
     , resources : Resources
-    , blackHatUpgrade : Maybe Upgrade.BlackHatData
-    , upgradesAvailable : List Upgrade
     , availableDecisions : List Decision
     , randomEvents : List RandomEvent
+    , upgradesAvailable : List Upgrade
+
+    -- Upgrades
+    , blackHatUpgrade : Maybe Upgrade.BlackHatData
+    , dataAnalyticsUpgrade : Bool
     }
 
 
@@ -66,10 +69,11 @@ initGenerator name =
         (\availableDecisions ->
             { name = name
             , resources = resources
-            , blackHatUpgrade = Nothing
-            , upgradesAvailable = []
             , availableDecisions = availableDecisions
             , randomEvents = []
+            , upgradesAvailable = []
+            , blackHatUpgrade = Nothing
+            , dataAnalyticsUpgrade = False
             }
         )
         |> Random.Extra.andMap (Decision.listGenerator resources)
@@ -93,7 +97,7 @@ advanceMonth ({ resources } as region) =
             }
     in
     Random.constant
-        (\availableDecisions randomEvents addBlackHatUpgrade ->
+        (\availableDecisions randomEvents addBlackHatUpgrade addDataAnalyticsUpgrade ->
             let
                 addedUpgrades : List Upgrade
                 addedUpgrades =
@@ -103,6 +107,15 @@ advanceMonth ({ resources } as region) =
                             && not (List.member BlackHatBootcamp region.upgradesAvailable)
                       then
                         Just BlackHatBootcamp
+
+                      else
+                        Nothing
+                    , if
+                        addDataAnalyticsUpgrade
+                            && not region.dataAnalyticsUpgrade
+                            && not (List.member DataAnalytics region.upgradesAvailable)
+                      then
+                        Just DataAnalytics
 
                       else
                         Nothing
@@ -123,6 +136,7 @@ advanceMonth ({ resources } as region) =
         |> Random.Extra.andMap (Decision.listGenerator newResources)
         |> Random.Extra.andMap (RandomEvent.listGenerator newResources)
         |> Random.Extra.andMap (upgradeChanceGenerator BlackHatBootcamp)
+        |> Random.Extra.andMap (upgradeChanceGenerator DataAnalytics)
 
 
 upgradeChanceGenerator : Upgrade -> Generator Bool
@@ -207,3 +221,6 @@ initializeUpgrade upgrade region =
     case upgrade of
         BlackHatBootcamp ->
             { region | blackHatUpgrade = Just Upgrade.initBlackHat }
+
+        DataAnalytics ->
+            { region | dataAnalyticsUpgrade = True }

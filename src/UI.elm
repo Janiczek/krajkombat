@@ -1,5 +1,6 @@
 module UI exposing
     ( Sprite(..)
+    , Word(..)
     , btn
     , cls
     , col
@@ -11,6 +12,7 @@ module UI exposing
     , mod
     , modal
     , none
+    , pluralize
     , prose
     , row
     , section
@@ -20,6 +22,8 @@ module UI exposing
 import Html exposing (Html)
 import Html.Attributes
 import Markdown
+import PluralRules
+import PluralRules.Cz
 import Round
 
 
@@ -46,7 +50,7 @@ btn : List (Html.Attribute msg) -> String -> Html msg
 btn attrs label =
     Html.button
         (attrs
-            ++ [ cls "bg-blue-500 text-white px-[1ch] rounded-md w-fit shadow-sm transition-shadow border border-white"
+            ++ [ cls "bg-blue-500 text-white px-[1ch] rounded-md w-fit shadow-sm transition-shadow border border-white text-nowrap h-fit"
                , mod "hover" "bg-blue-400 shadow-md cursor-pointer"
                , mod "active" "bg-blue-500 shadow-inner translate-y-[2px]"
                , mod "disabled" "bg-gray-300 text-gray-500 cursor-not-allowed shadow-none"
@@ -198,3 +202,43 @@ handwriting text =
     Html.span
         [ cls "inline-block text-2xl font-handwriting -rotate-8 text-red-600" ]
         [ Html.text text ]
+
+
+type Word
+    = Chechtak
+    | Mesic
+
+
+pluralWord : Word -> String
+pluralWord word =
+    case word of
+        Chechtak ->
+            "Chechtak"
+
+        Mesic ->
+            "měsíc"
+
+
+pluralize : Word -> Int -> String
+pluralize word count =
+    PluralRules.Cz.pluralize pluralRules count (pluralWord word)
+
+
+pluralRules : PluralRules.Rules
+pluralRules =
+    PluralRules.fromList
+        [ ( pluralWord Mesic
+          , [ ( PluralRules.One, "měsíc" )
+            , ( PluralRules.Few, "měsíce" ) -- 2..4
+            , ( PluralRules.Many, "měsíců" )
+            , ( PluralRules.Other, "měsíců" )
+            ]
+          )
+        , ( pluralWord Chechtak
+          , [ ( PluralRules.One, "Chechtak" )
+            , ( PluralRules.Few, "Chechtaky" ) -- 2..4
+            , ( PluralRules.Many, "Chechtaku" )
+            , ( PluralRules.Other, "Chechtaku" )
+            ]
+          )
+        ]

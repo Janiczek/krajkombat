@@ -12,6 +12,7 @@ module Game exposing
 
 import Constants
 import Decision exposing (Decision)
+import Dict exposing (Dict)
 import List.Extra
 import Random exposing (Generator)
 import Random.Extra
@@ -55,6 +56,7 @@ type alias Game =
     { you : Region
     , others : List Region
     , monthsLeft : Int
+    , bbvHistory : Dict String (List Int)
     }
 
 
@@ -65,6 +67,10 @@ gameInitGenerator =
             { you = you
             , others = others
             , monthsLeft = Constants.initMonthsLeft
+            , bbvHistory =
+                (you.name :: List.map .name others)
+                    |> List.map (\name -> ( name, [ 0 ] ))
+                    |> Dict.fromList
             }
         )
         |> Random.Extra.andMap (Region.initGenerator Region.youName)
@@ -119,6 +125,34 @@ advanceMonth game =
                 |> Random.andThen (Random.Extra.traverse Region.advanceMonth)
             )
         |> Random.andThen generateAndApplyRandomEventsToOthers
+        |> Random.map
+            (\newGame ->
+                let
+                    newHistory : Dict String (List Int)
+                    newHistory =
+                        List.foldl
+                            addToSeries
+                            newGame.bbvHistory
+                            (( newGame.you.name, newGame.you.resources.bbv )
+                                :: List.map (\other -> ( other.name, other.resources.bbv )) newGame.others
+                            )
+                in
+                { newGame | bbvHistory = newHistory }
+            )
+
+
+addToSeries : ( String, Int ) -> Dict String (List Int) -> Dict String (List Int)
+addToSeries ( name, value ) history =
+    Dict.update name
+        (\series ->
+            case series of
+                Just series_ ->
+                    Just (value :: series_)
+
+                Nothing ->
+                    Just [ value ]
+        )
+        history
 
 
 generateAndApplyRandomEventsToOthers : Game -> Generator Game
