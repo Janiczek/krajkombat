@@ -36,6 +36,8 @@ type Msg
       -- GameLoop
     | AdvanceMonth
     | MakeDecision Decision
+      -- Random Events Modal
+    | ApplyNextRandomEvent
       -- GameEnded
     | BackToMainMenu
 
@@ -124,6 +126,10 @@ update msg model =
             model
                 |> updateGameLoop (Game.MakeDecision decision)
 
+        ApplyNextRandomEvent ->
+            model
+                |> updateGameLoop Game.ApplyNextRandomEvent
+
 
 advanceJuice : Model -> Model
 advanceJuice model =
@@ -171,10 +177,10 @@ view : Model -> Browser.Document Msg
 view model =
     { title = title
     , body =
-        [ Html.div
+        Html.div
             [ UI.cls "font-mono p-2 pt-8 flex justify-center" ]
             (viewGamePhase model.juice model.gamePhase)
-        ]
+            :: viewRandomEventsModal model
     }
 
 
@@ -263,7 +269,7 @@ viewDecisionRow yourResources decision =
     let
         canApply : Bool
         canApply =
-            Decision.canApplyDeltas yourResources decision
+            Resource.canApplyDeltas yourResources decision.deltas
 
         flavorTextNode : Html msg
         flavorTextNode =
@@ -578,3 +584,63 @@ viewDelta delta =
     Html.span
         [ UI.cls colorClass ]
         [ Html.text content ]
+
+
+viewRandomEventsModal : Model -> List (Html Msg)
+viewRandomEventsModal model =
+    case model.gamePhase of
+        Game.MainMenu ->
+            []
+
+        Game.Intro ->
+            []
+
+        Game.GameEnded _ ->
+            []
+
+        Game.GameLoop game ->
+            case game.you.randomEvents of
+                [] ->
+                    []
+
+                currentEvent :: _ ->
+                    let
+                        headingText : String
+                        headingText =
+                            -- TODO juice
+                            if currentEvent.isGood then
+                                "Dobra nahoda"
+
+                            else
+                                "Špatna nahoda (a kurde)"
+
+                        buttonText : String
+                        buttonText =
+                            if currentEvent.isGood then
+                                "Tuž dobre no ni?"
+
+                            else
+                                "Oukej no"
+                    in
+                    [ UI.modal []
+                        [ UI.col [ UI.cls "gap-4" ]
+                            [ UI.heading headingText
+                            , Html.div []
+                                [ Html.text currentEvent.flavorText ]
+                            , if not (List.isEmpty currentEvent.deltas) then
+                                Html.div [ UI.cls "text-sm" ]
+                                    (currentEvent.deltas
+                                        |> List.map viewDelta
+                                        |> List.intersperse (Html.text ", ")
+                                    )
+
+                              else
+                                UI.none
+                            , UI.row [ UI.cls "justify-between items-center" ]
+                                [ UI.btn
+                                    [ Html.Events.onClick ApplyNextRandomEvent ]
+                                    buttonText
+                                ]
+                            ]
+                        ]
+                    ]

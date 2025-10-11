@@ -1,7 +1,9 @@
 module Resource exposing
     ( Resources
     , applyDelta
+    , applyDeltas
     , canApplyDelta
+    , canApplyDeltas
     , init
     )
 
@@ -22,8 +24,8 @@ init : Resources
 init =
     { ap = 100
     , apPerMonth = 100
-    , gref = 1.0
-    , bref = 1.0
+    , gref = 0.6
+    , bref = 0.4
     , bbv = 0
     , bbvPerMonth = 4 -- just under 100 after 24 months
     }
@@ -60,10 +62,6 @@ canApplyDelta resources delta =
     let
         rule : number -> number -> Bool
         rule n resource =
-            let
-                _ =
-                    Debug.log "rule" ( n, resource, ( resource + n, resource + n >= 0 ) )
-            in
             resource + n >= 0
     in
     case delta of
@@ -84,3 +82,17 @@ canApplyDelta resources delta =
 
         BBVPerMonth n ->
             rule n resources.bbvPerMonth
+
+
+canApplyDeltas : Resources -> List ResourceDelta -> Bool
+canApplyDeltas resources deltas =
+    List.all (canApplyDelta resources) deltas
+
+
+applyDeltas : List ResourceDelta -> Resources -> Resources
+applyDeltas deltas resources =
+    if canApplyDeltas resources deltas then
+        List.foldl applyDelta resources deltas
+
+    else
+        resources

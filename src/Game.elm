@@ -13,6 +13,7 @@ module Game exposing
 import Decision exposing (Decision)
 import Random exposing (Generator)
 import Random.Extra
+import RandomEvent
 import Ranking exposing (Ranking)
 import Region exposing (Region)
 import Resource
@@ -20,6 +21,7 @@ import Resource
 
 type Msg
     = MakeDecision Decision
+    | ApplyNextRandomEvent
 
 
 type Phase
@@ -64,8 +66,8 @@ gameInitGenerator =
             , monthsLeft = 24
             }
         )
-        |> Random.Extra.andMap (Region.generator Region.youName)
-        |> Random.Extra.andMap (Region.listGenerator otherRegionsCount)
+        |> Random.Extra.andMap (Region.initGenerator Region.youName)
+        |> Random.Extra.andMap (Region.initListGenerator otherRegionsCount)
 
 
 makeAIDecisions : Region -> Generator Region
@@ -104,7 +106,8 @@ applyDecision decision region =
     let
         newResources : Resource.Resources
         newResources =
-            Decision.applyDeltas decision region.resources
+            region.resources
+                |> Resource.applyDeltas decision.deltas
 
         newAvailableDecisions : List Decision
         newAvailableDecisions =
@@ -133,6 +136,20 @@ advanceMonth game =
                 |> Random.Extra.traverse makeAIDecisions
                 |> Random.andThen (Random.Extra.traverse Region.advanceMonth)
             )
+        |> Random.andThen generateAndApplyRandomEventsToOthers
+
+
+generateAndApplyRandomEventsToOthers : Game -> Generator Game
+generateAndApplyRandomEventsToOthers game =
+    game.others
+        |> Random.Extra.traverse generateAndApplyRandomEventsToRegion
+        |> Random.map (\others -> { game | others = others })
+
+
+generateAndApplyRandomEventsToRegion : Region -> Generator Region
+generateAndApplyRandomEventsToRegion region =
+    RandomEvent.listGenerator region.resources
+        |> Random.map (\randomEvents -> Region.applyRandomEvents randomEvents region)
 
 
 end : Game -> Results
@@ -171,6 +188,9 @@ update msg game =
         MakeDecision decision ->
             makeDecision decision game
 
+        ApplyNextRandomEvent ->
+            applyNextRandomEvent game
+
 
 makeDecision : Decision -> Game -> Game
 makeDecision decision ({ you } as game) =
@@ -180,3 +200,26 @@ makeDecision decision ({ you } as game) =
             applyDecision decision you
     in
     { game | you = updatedYou }
+
+
+applyNextRandomEvent : Game -> Game
+applyNextRandomEvent ({ you } as game) =
+    case you.randomEvents of
+        [] ->
+            game
+
+        currentEvent :: rest ->
+            let
+                newResources : Resource.Resources
+                newResources =
+                    you.resources
+                        |> Resource.applyDeltas currentEvent.deltas
+
+                newYou : Region
+                newYou =
+                    { you
+                        | resources = newResources
+                        , randomEvents = rest
+                    }
+            in
+            { game | you = newYou }

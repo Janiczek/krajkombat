@@ -26,7 +26,7 @@
 - [x] random list of preventions for this month
 - [ ] random list of urgencies (and when they're revealed in this month)
 - [ ] random list of president bribe opportunities (chance proportional to BBV or relative region ranking)
-- [ ] random list of random events for this month
+- [x] random list of random events for this month
 - [ ] random list of available upgrades
       - [ ] unlocked via random events
       - [ ] unlocked via investments

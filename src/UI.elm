@@ -6,6 +6,7 @@ module UI exposing
     , heading
     , link
     , mod
+    , modal
     , none
     , row
     , section
@@ -90,3 +91,13 @@ section attrs children =
 float : Float -> String
 float n =
     Round.round 2 n
+
+
+modal : List (Html.Attribute msg) -> List (Html msg) -> Html msg
+modal attrs children =
+    Html.div
+        [ cls "font-mono fixed inset-0 bg-slate-900/50 flex items-center justify-center z-50" ]
+        [ Html.div
+            (attrs ++ [ cls "bg-slate-50 rounded-lg shadow-xl max-w-md w-full mx-4 p-4" ])
+            children
+        ]

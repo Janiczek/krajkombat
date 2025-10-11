@@ -1,8 +1,10 @@
 module Region exposing
     ( Region
     , advanceMonth
-    , generator
-    , listGenerator
+    , applyRandomEvent
+    , applyRandomEvents
+    , initGenerator
+    , initListGenerator
     , youName
     )
 
@@ -11,6 +13,7 @@ import Decision exposing (Decision)
 import Random exposing (Generator)
 import Random.Extra
 import Random.List
+import RandomEvent exposing (RandomEvent)
 import Resource exposing (Resources)
 import Upgrade exposing (Upgrade)
 
@@ -21,6 +24,7 @@ type alias Region =
     , upgrades : AssocSet.Set Upgrade
     , upgradesAvailable : List { upgrade : Upgrade, monthsLeft : Int }
     , availableDecisions : List Decision
+    , randomEvents : List RandomEvent
     }
 
 
@@ -47,8 +51,8 @@ otherNames =
     ]
 
 
-generator : String -> Generator Region
-generator name =
+initGenerator : String -> Generator Region
+initGenerator name =
     let
         resources : Resources
         resources =
@@ -61,16 +65,17 @@ generator name =
             , upgrades = AssocSet.empty
             , upgradesAvailable = []
             , availableDecisions = availableDecisions
+            , randomEvents = []
             }
         )
         |> Random.Extra.andMap (Decision.listGenerator resources)
 
 
-listGenerator : Int -> Generator (List Region)
-listGenerator n =
+initListGenerator : Int -> Generator (List Region)
+initListGenerator n =
     Random.List.shuffle otherNames
         |> Random.map (List.take n)
-        |> Random.andThen (Random.Extra.traverse generator)
+        |> Random.andThen (Random.Extra.traverse initGenerator)
 
 
 advanceMonth : Region -> Generator Region
@@ -84,10 +89,27 @@ advanceMonth ({ resources } as region) =
             }
     in
     Random.constant
-        (\availableDecisions ->
+        (\availableDecisions randomEvents ->
             { region
                 | resources = newResources
                 , availableDecisions = availableDecisions
+                , randomEvents = randomEvents
             }
         )
         |> Random.Extra.andMap (Decision.listGenerator newResources)
+        |> Random.Extra.andMap (RandomEvent.listGenerator newResources)
+
+
+applyRandomEvent : RandomEvent -> Region -> Region
+applyRandomEvent event region =
+    let
+        newResources : Resource.Resources
+        newResources =
+            List.foldl Resource.applyDelta region.resources event.deltas
+    in
+    { region | resources = newResources }
+
+
+applyRandomEvents : List RandomEvent -> Region -> Region
+applyRandomEvents events region =
+    List.foldl applyRandomEvent region events

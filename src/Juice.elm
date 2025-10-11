@@ -42,6 +42,7 @@ finishIntroButtonTexts =
     , [ "Si moc dluhy"
       , "No a co jako"
       , "Drž pec cype"
+      , "No dobre no"
       ]
     )
 

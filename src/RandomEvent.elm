@@ -19,6 +19,7 @@ goodGenerator =
         [ ( "Naš tym je uplně rozdupal", [ AP 50, BBV 20 ] )
         , ( "Hackeři z SPŠE se někam naburali", [ AP 150, BREF 0.01 ] )
         , ( "Hackeři z SPŠE zjistili že databaze KrajKombatu ma defaultni heslo", [ BBV 50 ] )
+        , ( "Naše škola byla nejlepši v republice kamo", [ AP 50, APPerMonth 20, GREF 0.03 ] )
         ]
         |> Random.map
             (\( flavorText, deltas ) ->
@@ -34,7 +35,7 @@ goodGenerator =
 badGenerator : Generator RandomEvent
 badGenerator =
     Random.uniform ( "Přišli nam na podvod", [ AP -50, BREF 0.03 ] )
-        [ ( "Moc sme to nedali", [ BREF -0.05 ] )
+        [ ( "Na tom hřišti sme to moc nedali", [ BREF 0.05 ] )
         , ( "Zas nějaky doping", [ AP -30, BBVPerMonth -2 ] )
         , ( "Hackeři z SPŠE po sobě nezametli stopy kuva", [ AP -50 ] )
         ]

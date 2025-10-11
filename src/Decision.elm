@@ -1,8 +1,6 @@
 module Decision exposing
     ( Decision
     , DecisionType(..)
-    , applyDeltas
-    , canApplyDeltas
     , listGenerator
     )
 
@@ -35,7 +33,7 @@ listGenerator : Resources -> Generator (List Decision)
 listGenerator resources =
     Random.list maxDecisionsPerMonth decisionGenerator
         |> Random.map keepUniqueNames
-        |> Random.map (List.filter (canApplyDeltas resources))
+        |> Random.map (List.filter (\decision -> Resource.canApplyDeltas resources decision.deltas))
 
 
 decisionGenerator : Generator Decision
@@ -236,17 +234,3 @@ keepUniqueNames decisions =
         |> List.map (\decision -> ( decision.flavorText, decision ))
         |> Dict.fromList
         |> Dict.values
-
-
-canApplyDeltas : Resources -> Decision -> Bool
-canApplyDeltas resources decision =
-    List.all (Resource.canApplyDelta resources) decision.deltas
-
-
-applyDeltas : Decision -> Resources -> Resources
-applyDeltas decision resources =
-    if canApplyDeltas resources decision then
-        List.foldl Resource.applyDelta resources decision.deltas
-
-    else
-        resources
